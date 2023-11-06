@@ -14,7 +14,6 @@ module.exports = class Application {
     }
 
     async startApp() {
-        console.log(apiKey)
         if (!apiKey) {
             return console.log(new Error("Watchlog Server is not found"))
         }
