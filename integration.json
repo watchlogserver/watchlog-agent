@@ -1,0 +1,24 @@
+[
+    {
+        "service": "pm2",
+        "apps": true,
+        "monitor": true
+    },
+    {
+        "service": "docker",
+        "monitor": true
+    },
+    {
+        "service": "mongodb",
+        "monitor": true,
+        "username": "",
+        "password": ""
+    },
+    {
+        "service": "redis",
+        "monitor": true,
+        "host": "127.0.0.1",
+        "port": "6379",
+        "password": ""
+    }
+]
