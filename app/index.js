@@ -7,18 +7,18 @@ const port = 3774
 const watchlog_server = process.env.WATCHLOG_SERVER
 const apiKey = process.env.WATCHLOG_APIKEY
 var ioServer = require('socket.io-client');
-const watchlogServerSocket = ioServer.connect(watchlog_server, { reconnect: true });
+const watchlogServerSocket = require("./socketServer");
 const express = require('express')
 const app = express()
 const exec = require('child_process').exec;
 const path = require('path')
 const configFilePath = path.join(__dirname, './../.env');
 const integrations = require("./../integration.json")
-const pm2Integration = require('./integrations/pm2')
 const dockerIntegration = require('./integrations/docker')
 const mongoIntegration = require('./integrations/mongo')
 const redisIntegration = require('./integrations/redis')
-
+const nginxIntegration = require('./integrations/nginx')
+let customMetrics = []
 
 
 module.exports = class Application {
@@ -65,6 +65,13 @@ module.exports = class Application {
 
     runAgent(uuid) {
         app.listen(port, () => console.log(`Watchlog api agent is running on port 3774`))
+        app.use(express.json());
+        app.use(express.urlencoded({
+            extended: true
+        }));
+
+
+
         this.getRouter(uuid)
         const wss = new WebSocketServer({ port: 3775, host: "127.0.0.1" }, () => console.log("Watchlog agent is running on port 3775"));
         wss.on('connection', function connection(ws) {
@@ -73,48 +80,214 @@ module.exports = class Application {
             ws.on('message', function message(data) {
                 try {
                     let body = JSON.parse(data)
-                    switch (body.method) {
-                        case 'increment':
-                            if (body.metric && body.count) {
-                                watchlogServerSocket.emit('increment', { ...body, apiKey, type: 1 })
-                            }
-                            break;
-                        case 'decrement':
-                            if (body.metric && body.count) {
-                                watchlogServerSocket.emit('decrement', { ...body, apiKey, type: 1 })
-                            }
-                            break;
-                        case 'distribution':
-                            if (body.metric && body.count) {
-                                watchlogServerSocket.emit('distribution', { ...body, apiKey, type: 1 })
-                            }
-                            break;
-                        case 'gauge':
-                            if (body.metric && body.count) {
-                                watchlogServerSocket.emit('gauge', { ...body, apiKey, type: 1 })
-                            }
-                            break;
-                        case 'percentage':
-                            if (body.metric && body.count) {
-                                watchlogServerSocket.emit('percentage', { ...body, apiKey, type: 1 })
-                            }
-                            break;
-                        case 'systembyte':
-                            if (body.metric && body.count) {
-                                watchlogServerSocket.emit('systembyte', { ...body, apiKey, type: 1 })
-                            }
-                            break;
-                        case 'log':
-                            if (body.service && body.message) {
-                                watchlogServerSocket.emit('log', { ...body, type: 1 })
-                            }
-                            break;
-                        default:
-                            null
-                        // code block
+                    if (customMetrics.length < 1000) {                        
+                        switch (body.method) {
+                            case 'increment':
+                                if (body.metric && body.count) {
+
+                                    let isIn = false
+                                    for (let item in customMetrics) {
+                                        if (customMetrics[item].metric === body.metric) {
+                                            isIn = true
+                                            customMetrics[item].count++
+                                            customMetrics[item].sum += body.count
+                                            customMetrics[item].min = body.count < customMetrics[item].min ? body.count : customMetrics[item].min
+                                            customMetrics[item].max = body.count > customMetrics[item].max ? body.count : customMetrics[item].max
+                                            customMetrics[item].last = body.count
+                                            customMetrics[item].avg = customMetrics[item].sum / customMetrics[item].count
+
+                                            break
+                                        }
+                                    }
+                                    if (!isIn) {
+                                        customMetrics.push({
+                                            metric: body.metric,
+                                            count: 1,
+                                            sum: body.count,
+                                            min: body.count,
+                                            max: body.count,
+                                            last: body.count,
+                                            avg: body.count,
+                                            metricType: 'increment',
+                                            metric_type: 1
+                                        })
+                                    }
+                                }
+                                break;
+                            case 'decrement':
+                                if (body.metric && body.count) {
+                                    body.count = body.count > 0 ? body.count * -1 : body.count
+
+                                    let isIn = false
+                                    for (let item in customMetrics) {
+                                        if (customMetrics[item].metric === body.metric) {
+                                            isIn = true
+                                            customMetrics[item].count++
+                                            customMetrics[item].sum += body.count
+                                            customMetrics[item].min = body.count < customMetrics[item].min ? body.count : customMetrics[item].min
+                                            customMetrics[item].max = body.count > customMetrics[item].max ? body.count : customMetrics[item].max
+                                            customMetrics[item].last = body.count
+                                            customMetrics[item].avg = customMetrics[item].sum / customMetrics[item].count
+
+                                            break
+                                        }
+                                    }
+                                    if (!isIn) {
+                                        customMetrics.push({
+                                            metric: body.metric,
+                                            count: 1,
+                                            sum: body.count,
+                                            min: body.count,
+                                            max: body.count,
+                                            last: body.count,
+                                            avg: body.count,
+                                            metricType: 'decrement',
+                                            metric_type: 1
+
+                                        })
+                                    }
+                                }
+                                break;
+                            case 'distribution':
+                                if (body.metric && body.count) {
+                                    let isIn = false
+                                    for (let item in customMetrics) {
+                                        if (customMetrics[item].metric === body.metric) {
+                                            isIn = true
+                                            customMetrics[item].count++
+                                            customMetrics[item].sum = body.count
+                                            customMetrics[item].min = body.count
+                                            customMetrics[item].max = body.count
+                                            customMetrics[item].last = body.count
+                                            customMetrics[item].avg = customMetrics[item].sum / customMetrics[item].count
+
+                                            break
+                                        }
+                                    }
+                                    if (!isIn) {
+                                        customMetrics.push({
+                                            metric: body.metric,
+                                            count: 1,
+                                            sum: body.count,
+                                            min: body.count,
+                                            max: body.count,
+                                            last: body.count,
+                                            avg: body.count,
+                                            metricType: 'distribution',
+                                            metric_type: 2
+                                        })
+                                    }
+                                }
+                                break;
+                            case 'gauge':
+                                if (body.metric && body.count) {
+                                    let isIn = false
+                                    for (let item in customMetrics) {
+                                        if (customMetrics[item].metric === body.metric) {
+                                            isIn = true
+                                            customMetrics[item].count++
+                                            customMetrics[item].sum += body.count
+                                            customMetrics[item].min = body.count < customMetrics[item].min ? body.count : customMetrics[item].min
+                                            customMetrics[item].max = body.count > customMetrics[item].max ? body.count : customMetrics[item].max
+                                            customMetrics[item].last = body.count
+                                            customMetrics[item].avg = customMetrics[item].sum / customMetrics[item].count
+
+                                            break
+                                        }
+                                    }
+                                    if (!isIn) {
+                                        customMetrics.push({
+                                            metric: body.metric,
+                                            count: 1,
+                                            sum: body.count,
+                                            min: body.count,
+                                            max: body.count,
+                                            last: body.count,
+                                            avg: body.count,
+                                            metricType: 'gauge',
+                                            metric_type: 3
+                                        })
+                                    }
+                                }
+                                break;
+                            case 'percentage':
+                                if (body.metric && body.count && body.count >= 0 && body.count <= 100) {
+
+                                    let isIn = false
+                                    for (let item in customMetrics) {
+                                        if (customMetrics[item].metric === body.metric) {
+                                            isIn = true
+                                            customMetrics[item].count++
+                                            customMetrics[item].sum += body.count
+                                            customMetrics[item].min = body.count < customMetrics[item].min ? body.count : customMetrics[item].min
+                                            customMetrics[item].max = body.count > customMetrics[item].max ? body.count : customMetrics[item].max
+                                            customMetrics[item].last = body.count
+                                            customMetrics[item].avg = customMetrics[item].sum / customMetrics[item].count
+
+                                            break
+                                        }
+                                    }
+                                    if (!isIn) {
+                                        customMetrics.push({
+                                            metric: body.metric,
+                                            count: 1,
+                                            sum: body.count,
+                                            min: body.count,
+                                            max: body.count,
+                                            last: body.count,
+                                            avg: body.count,
+                                            metricType: 'percentage',
+                                            metric_type: 4
+                                        })
+                                    }
+                                }
+                                break;
+                            case 'systembyte':
+                                if (body.metric && body.count) {
+                                    let isIn = false
+                                    for (let item in customMetrics) {
+                                        if (customMetrics[item].metric === body.metric) {
+                                            isIn = true
+                                            customMetrics[item].count++
+                                            customMetrics[item].sum += body.count
+                                            customMetrics[item].min = body.count < customMetrics[item].min ? body.count : customMetrics[item].min
+                                            customMetrics[item].max = body.count > customMetrics[item].max ? body.count : customMetrics[item].max
+                                            customMetrics[item].last = body.count
+                                            customMetrics[item].avg = customMetrics[item].sum / customMetrics[item].count
+
+                                            break
+                                        }
+                                    }
+                                    if (!isIn) {
+                                        customMetrics.push({
+                                            metric: body.metric,
+                                            count: 1,
+                                            sum: body.count,
+                                            min: body.count,
+                                            max: body.count,
+                                            last: body.count,
+                                            avg: body.count,
+                                            metricType: 'systembyte',
+                                            metric_type: 5
+                                        })
+                                    }
+
+                                }
+                                break;
+                            case 'log':
+                                if (body.service && body.message) {
+                                    // watchlogServerSocket.emit('log', { ...body, type: 1 })
+                                }
+                                break;
+                            default:
+                                null
+                            // code block
+                        }
+                    
                     }
+
                 } catch (error) {
-                    console.log(error.message)
+                    console.log(error)
                 }
             });
 
@@ -128,49 +301,230 @@ module.exports = class Application {
             try {
                 if (watchlogServerSocket.connected) {
                     let body = req.query
+                    body.count = body.value
+
                     res.end()
-                    switch (body.method) {
-                        case 'increment':
-                            if (body.metric && body.value) {
-                                watchlogServerSocket.emit('increment', { ...body, type: 1 })
-                            }
-                            break;
-                        case 'decrement':
-                            if (body.metric && body.value) {
-                                watchlogServerSocket.emit('decrement', { ...body, type: 1 })
-                            }
-                            break;
-                        case 'distribution':
-                            if (body.metric && body.value) {
-                                watchlogServerSocket.emit('distribution', { ...body, type: 1 })
-                            }
-                            break;
-                        case 'gauge':
-                            if (body.metric && body.value) {
-                                watchlogServerSocket.emit('gauge', { ...body, type: 1 })
-                            }
-                            break;
-                        case 'percentage':
-                            if (body.metric && body.value) {
-                                watchlogServerSocket.emit('percentage', { ...body, type: 1 })
-                            }
-                            break;
-                        case 'systembyte':
-                            if (body.metric && body.value) {
-                                watchlogServerSocket.emit('systembyte', { ...body, type: 1, uuid: uuid })
-                            }
-                            break;
-                        case 'log':
-                            if (body.service && body.message) {
-                                watchlogServerSocket.emit('log', { ...body, host: "membersgram", apiKey, type: 1, uuid: uuid })
-                            }
-                            break;
-                        default:
-                            null
+
+                    if (customMetrics.length < 1000) {
+
+                        switch (body.method) {
+                            case 'increment':
+                                if (body.metric && body.count) {
+
+                                    let isIn = false
+                                    for (let item in customMetrics) {
+                                        if (customMetrics[item].metric === body.metric) {
+                                            isIn = true
+                                            customMetrics[item].count++
+                                            customMetrics[item].sum += body.count
+                                            customMetrics[item].min = body.count < customMetrics[item].min ? body.count : customMetrics[item].min
+                                            customMetrics[item].max = body.count > customMetrics[item].max ? body.count : customMetrics[item].max
+                                            customMetrics[item].last = body.count
+                                            customMetrics[item].avg = customMetrics[item].sum / customMetrics[item].count
+
+                                            break
+                                        }
+                                    }
+                                    if (!isIn) {
+                                        customMetrics.push({
+                                            metric: body.metric,
+                                            count: 1,
+                                            sum: body.count,
+                                            min: body.count,
+                                            max: body.count,
+                                            last: body.count,
+                                            avg: body.count,
+                                            metricType: 'increment',
+                                            metric_type: 1
+                                        })
+                                    }
+                                }
+                                break;
+                            case 'decrement':
+                                if (body.metric && body.count) {
+                                    body.count = body.count > 0 ? body.count * -1 : body.count
+
+                                    let isIn = false
+                                    for (let item in customMetrics) {
+                                        if (customMetrics[item].metric === body.metric) {
+                                            isIn = true
+                                            customMetrics[item].count++
+                                            customMetrics[item].sum += body.count
+                                            customMetrics[item].min = body.count < customMetrics[item].min ? body.count : customMetrics[item].min
+                                            customMetrics[item].max = body.count > customMetrics[item].max ? body.count : customMetrics[item].max
+                                            customMetrics[item].last = body.count
+                                            customMetrics[item].avg = customMetrics[item].sum / customMetrics[item].count
+
+                                            break
+                                        }
+                                    }
+                                    if (!isIn) {
+                                        customMetrics.push({
+                                            metric: body.metric,
+                                            count: 1,
+                                            sum: body.count,
+                                            min: body.count,
+                                            max: body.count,
+                                            last: body.count,
+                                            avg: body.count,
+                                            metricType: 'decrement',
+                                            metric_type: 1
+
+                                        })
+                                    }
+                                }
+                                break;
+                            case 'distribution':
+                                if (body.metric && body.count) {
+                                    let isIn = false
+                                    for (let item in customMetrics) {
+                                        if (customMetrics[item].metric === body.metric) {
+                                            isIn = true
+                                            customMetrics[item].count++
+                                            customMetrics[item].sum = body.count
+                                            customMetrics[item].min = body.count
+                                            customMetrics[item].max = body.count
+                                            customMetrics[item].last = body.count
+                                            customMetrics[item].avg = customMetrics[item].sum / customMetrics[item].count
+
+                                            break
+                                        }
+                                    }
+                                    if (!isIn) {
+                                        customMetrics.push({
+                                            metric: body.metric,
+                                            count: 1,
+                                            sum: body.count,
+                                            min: body.count,
+                                            max: body.count,
+                                            last: body.count,
+                                            avg: body.count,
+                                            metricType: 'distribution',
+                                            metric_type: 2
+                                        })
+                                    }
+                                }
+                                break;
+                            case 'gauge':
+                                if (body.metric && body.count) {
+                                    let isIn = false
+                                    for (let item in customMetrics) {
+                                        if (customMetrics[item].metric === body.metric) {
+                                            isIn = true
+                                            customMetrics[item].count++
+                                            customMetrics[item].sum += body.count
+                                            customMetrics[item].min = body.count < customMetrics[item].min ? body.count : customMetrics[item].min
+                                            customMetrics[item].max = body.count > customMetrics[item].max ? body.count : customMetrics[item].max
+                                            customMetrics[item].last = body.count
+                                            customMetrics[item].avg = customMetrics[item].sum / customMetrics[item].count
+
+                                            break
+                                        }
+                                    }
+                                    if (!isIn) {
+                                        customMetrics.push({
+                                            metric: body.metric,
+                                            count: 1,
+                                            sum: body.count,
+                                            min: body.count,
+                                            max: body.count,
+                                            last: body.count,
+                                            avg: body.count,
+                                            metricType: 'gauge',
+                                            metric_type: 3
+                                        })
+                                    }
+                                }
+                                break;
+                            case 'percentage':
+                                if (body.metric && body.count && body.count >= 0 && body.count <= 100) {
+
+                                    let isIn = false
+                                    for (let item in customMetrics) {
+                                        if (customMetrics[item].metric === body.metric) {
+                                            isIn = true
+                                            customMetrics[item].count++
+                                            customMetrics[item].sum += body.count
+                                            customMetrics[item].min = body.count < customMetrics[item].min ? body.count : customMetrics[item].min
+                                            customMetrics[item].max = body.count > customMetrics[item].max ? body.count : customMetrics[item].max
+                                            customMetrics[item].last = body.count
+                                            customMetrics[item].avg = customMetrics[item].sum / customMetrics[item].count
+
+                                            break
+                                        }
+                                    }
+                                    if (!isIn) {
+                                        customMetrics.push({
+                                            metric: body.metric,
+                                            count: 1,
+                                            sum: body.count,
+                                            min: body.count,
+                                            max: body.count,
+                                            last: body.count,
+                                            avg: body.count,
+                                            metricType: 'percentage',
+                                            metric_type: 4
+                                        })
+                                    }
+                                }
+                                break;
+                            case 'systembyte':
+                                if (body.metric && body.count) {
+                                    let isIn = false
+                                    for (let item in customMetrics) {
+                                        if (customMetrics[item].metric === body.metric) {
+                                            isIn = true
+                                            customMetrics[item].count++
+                                            customMetrics[item].sum += body.count
+                                            customMetrics[item].min = body.count < customMetrics[item].min ? body.count : customMetrics[item].min
+                                            customMetrics[item].max = body.count > customMetrics[item].max ? body.count : customMetrics[item].max
+                                            customMetrics[item].last = body.count
+                                            customMetrics[item].avg = customMetrics[item].sum / customMetrics[item].count
+
+                                            break
+                                        }
+                                    }
+                                    if (!isIn) {
+                                        customMetrics.push({
+                                            metric: body.metric,
+                                            count: 1,
+                                            sum: body.count,
+                                            min: body.count,
+                                            max: body.count,
+                                            last: body.count,
+                                            avg: body.count,
+                                            metricType: 'systembyte',
+                                            metric_type: 5
+                                        })
+                                    }
+
+                                }
+                                break;
+                            case 'log':
+                                if (body.service && body.message) {
+                                    // watchlogServerSocket.emit('log', { ...body, type: 1 })
+                                }
+                                break;
+                            default:
+                                null
+                            // code block
+                        }
+
                     }
                 }
             } catch (error) {
                 console.log(error.message)
+            }
+        })
+
+        app.post("/pm2list", (req, res) => {
+
+            if (req.body.username && req.body.apps) {
+                if (watchlogServerSocket.connected) {
+                    watchlogServerSocket.emit("integrations/pm2List", {
+                        data: req.body
+                    })
+                }
             }
         })
     }
@@ -234,28 +588,6 @@ module.exports = class Application {
                         if (result) {
                             watchlogServerSocket.emit("integrations/redisservice", {
                                 data: result
-                            })
-                        }
-                    })
-                    break
-                }
-            }
-        } catch (error) {
-        }
-
-
-
-        try {
-
-            for (let index in integrations) {
-
-                if (integrations[index].service == 'pm2') {
-                    pm2Integration.getData((result, err) => {
-                        if (result) {
-                            watchlogServerSocket.emit("integrations/pm2service", {
-                                data: {
-                                    apps: result
-                                }
                             })
                         }
                     })
@@ -454,7 +786,7 @@ watchlogServerSocket.on('reconnect', async (attemptNumber) => {
             } else {
                 uuid = systemOsfo.hostname
             }
-            fs.appendFileSync(configFilePath, `\nUUID=${uuid}`, 'utf8');
+            // fs.appendFileSync(configFilePath, `\nUUID=${uuid}`, 'utf8');
 
 
         } else {
@@ -500,3 +832,18 @@ function isPrivateIP(ip) {
         (ipNum >= (127 << 24) && ipNum <= (127 << 24 | 0xFFFFFF))               // 127.0.0.0 - 127.255.255.255 (loopback)
     );
 }
+
+
+
+setInterval(() => {
+
+    try {
+
+        watchlogServerSocket.emit('customMetrics', customMetrics)
+        customMetrics = []
+
+    } catch (error) {
+        console.log(error)
+    }
+
+}, 10000)

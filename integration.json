@@ -1,24 +1,25 @@
 [
     {
-        "service": "pm2",
-        "apps": true,
-        "monitor": true
-    },
-    {
         "service": "docker",
-        "monitor": true
+        "monitor": false
     },
     {
         "service": "mongodb",
-        "monitor": true,
+        "monitor": false,
         "username": "",
         "password": ""
     },
     {
         "service": "redis",
-        "monitor": true,
+        "monitor": false,
         "host": "127.0.0.1",
         "port": "6379",
         "password": ""
+    },
+    {
+        "monitor": false,
+        "service" : "nginx",
+        "accessLog" : "/var/log/nginx/access.log",
+        "nginx_status_url" : "http://localhost:8080/nginx_status"
     }
 ]
