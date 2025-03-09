@@ -80,13 +80,22 @@ function validatePatterns(logs) {
 function parseAutoLogFormat(log, service) {
     const pattern = autoPatterns[service] || autoPatterns.default;
     const match = log.match(pattern);
-
     if (match) {
-        return {
-            date: new Date(match[1] || Date.now()).toISOString(),
-            level: match[2] || "info",
-            message: match[3] || log
-        };
+        let extractedDate = match[1] || null;
+        
+        if (extractedDate) {
+            let parsedDate = new Date(extractedDate);
+            if (!isNaN(parsedDate.getTime())) {
+                logData.date = parsedDate.toISOString();
+            } else {
+                logData.date = new Date().toISOString(); // Fallback to current time if invalid
+            }
+        } else {
+            logData.date = new Date().toISOString(); // Default if no date is found
+        }
+    
+        logData.level = match[2] || "info";
+        logData.message = match[3] || log;
     }
 
     // اگر فرمت تشخیص داده نشد، لاگ رو به‌صورت متنی ارسال کن
@@ -100,7 +109,7 @@ function parseAutoLogFormat(log, service) {
 // پردازش لاگ
 function processLogLine(log, config) {
     let logData = {
-        date: new Date().toISOString(),
+        date: new Date().toISOString(),  // This line might be causing the error
         message: log,
         level: "info",
         service: config.service,
@@ -113,7 +122,19 @@ function processLogLine(log, config) {
         const match = log.match(regex);
 
         if (match) {
-            logData.date = new Date(match[1] || Date.now()).toISOString();
+            let extractedDate = match[1] || null;
+            
+            if (extractedDate) {
+                let parsedDate = new Date(extractedDate);
+                if (!isNaN(parsedDate.getTime())) {
+                    logData.date = parsedDate.toISOString();
+                } else {
+                    logData.date = new Date().toISOString(); // Fallback to current time if invalid
+                }
+            } else {
+                logData.date = new Date().toISOString(); // Default if no date is found
+            }
+        
             logData.level = match[2] || "info";
             logData.message = match[3] || log;
         }
