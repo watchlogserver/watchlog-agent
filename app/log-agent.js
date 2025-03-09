@@ -76,26 +76,23 @@ function validatePatterns(logs) {
     });
 }
 
-// پردازش لاگ با `auto` (تشخیص خودکار فرمت)
 function parseAutoLogFormat(log, service) {
     const pattern = autoPatterns[service] || autoPatterns.default;
     const match = log.match(pattern);
+
     if (match) {
         let extractedDate = match[1] || null;
-        
-        if (extractedDate) {
-            let parsedDate = new Date(extractedDate);
-            if (!isNaN(parsedDate.getTime())) {
-                logData.date = parsedDate.toISOString();
-            } else {
-                logData.date = new Date().toISOString(); // Fallback to current time if invalid
-            }
-        } else {
-            logData.date = new Date().toISOString(); // Default if no date is found
+        let parsedDate = new Date(extractedDate);
+
+        if (!extractedDate || isNaN(parsedDate.getTime())) {
+            parsedDate = new Date(); // Fallback to current timestamp if invalid
         }
-    
-        logData.level = match[2] || "info";
-        logData.message = match[3] || log;
+
+        return {
+            date: parsedDate.toISOString(),
+            level: match[2] || "info",
+            message: match[3] || log
+        };
     }
 
     // اگر فرمت تشخیص داده نشد، لاگ رو به‌صورت متنی ارسال کن
@@ -105,6 +102,7 @@ function parseAutoLogFormat(log, service) {
         message: log
     };
 }
+
 
 // پردازش لاگ
 function processLogLine(log, config) {
