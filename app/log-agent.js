@@ -128,13 +128,21 @@ function processLogLine(log, config) {
         service: config.service,
         name: config.name
     };
-    
+
     if (config.format === "custom" && config.pattern) {
         const regex = new RegExp(config.pattern);
         const match = log.match(regex);
 
         if (match) {
-            logData.date = new Date(match[1] || Date.now()).toISOString();
+            const extractedDate = match[1];  // First captured group (date)
+            let parsedDate = new Date(extractedDate);
+
+            // Handle invalid date cases
+            if (isNaN(parsedDate.getTime())) {
+                parsedDate = new Date(); // Fallback to current date
+            }
+
+            logData.date = parsedDate.toISOString();
             logData.level = detectLogLevel(match[2] || match[3] || log, config.service);
             logData.message = match[3] || log;
         }
@@ -144,6 +152,7 @@ function processLogLine(log, config) {
 
     watchlogServerSocket.emit("logs/watchlist", logData);
 }
+
 
 // ** Monitor Log Files **
 function startMonitoring() {
