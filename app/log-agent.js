@@ -70,17 +70,19 @@ function validatePatterns(logs) {
 
 // ** Detect Level Dynamically **
 function detectLogLevel(message, service) {
+    // Convert short levels (MongoDB: I, E, W) into readable levels
     const levelMappings = {
-        "I": "INFO", "E": "ERROR", "W": "WARNING", "F": "FATAL",
-        "D": "DEBUG", "C": "CRITICAL", "N": "NOTICE",
-        "INFO": "INFO", "WARNING": "WARNING", "ERROR": "ERROR", 
-        "DEBUG": "DEBUG", "FATAL": "FATAL", "CRITICAL": "CRITICAL", 
-        "NOTICE": "NOTICE", "TRACE": "TRACE", "VERBOSE": "VERBOSE",
-        "ALERT": "ALERT", "EMERG": "EMERGENCY", "CRIT": "CRITICAL", "WARN": "WARNING"
+        "I": "INFO",
+        "E": "ERROR",
+        "W": "WARNING",
+        "F": "FATAL",
+        "D": "DEBUG",
+        "C": "CRITICAL",
+        "N": "NOTICE"
     };
 
     // Extract log level from message
-    let detectedLevel = message.match(/\b(INFO|WARNING|ERROR|DEBUG|FATAL|CRITICAL|NOTICE|TRACE|VERBOSE|ALERT|EMERG|CRIT|WARN|I|E|W|F|D|C|N)\b/i);
+    let detectedLevel = message.match(/\b(INFO|WARNING|ERROR|DEBUG|FATAL|CRITICAL|NOTICE|TRACE|VERBOSE|I|E|W|F|D|C|N)\b/i);
     
     if (detectedLevel) {
         let rawLevel = detectedLevel[1].toUpperCase();
@@ -89,7 +91,6 @@ function detectLogLevel(message, service) {
 
     return "INFO"; // Default level
 }
-
 
 function parseAutoLogFormat(log, service) {
     const pattern = autoPatterns[service] || autoPatterns.default;
@@ -163,7 +164,7 @@ function processLogLine(log, config) {
 
 
 
-let recentLogs = new Set();
+const LOG_READ_SIZE = 500; // Adjust this value if necessary
 
 function startMonitoring() {
     logConfig.logs.forEach(logEntry => {
@@ -175,22 +176,59 @@ function startMonitoring() {
         console.log(`👀 Monitoring: ${logEntry.name} (${logEntry.path})`);
         monitorLogs.push(logEntry);
 
-        chokidar.watch(logEntry.path, { persistent: true, ignoreInitial: true })
-            .on('change', filePath => {
-                fs.readFile(filePath, 'utf8', (err, data) => {
-                    if (err) {
-                        console.error(`Error reading file ${filePath}:`, err);
-                        return;
-                    }
+        const watcher = chokidar.watch(logEntry.path, { persistent: true, ignoreInitial: true });
 
-                    const lines = data.split('\n').filter(line => line.trim() !== "");
-                    lines.forEach(line => processLogLine(line, logEntry));
+        watcher.on('change', filePath => {
+            try {
+                const stats = fs.statSync(filePath);
+                if (stats.size === 0) return; // Skip empty files
+
+                const stream = fs.createReadStream(filePath, {
+                    encoding: 'utf8',
+                    start: Math.max(0, stats.size - LOG_READ_SIZE) // Read only the last few bytes
                 });
-            })
-            .on('error', error => console.error(`Error watching file ${logEntry.path}:`, error));
-    });
-}
 
+                let buffer = "";
+                stream.on('data', chunk => {
+                    buffer += chunk;
+                    const lines = buffer.split('\n');
+
+                    // Keep only complete lines, store the remainder in buffer
+                    buffer = lines.pop(); 
+
+                    lines.forEach(line => {
+                        if (line.trim() && !recentLogs.has(line)) {
+                            processLogLine(line, logEntry);
+                            recentLogs.add(line);
+
+                            // Remove old logs after 5 seconds to avoid memory leaks
+                            setTimeout(() => recentLogs.delete(line), 5000);
+                        }
+                    });
+                });
+
+                stream.on('error', err => console.error(`Error reading file ${filePath}:`, err));
+            } catch (error) {
+                console.error(`❌ Error processing file ${filePath}:`, error);
+            }
+        });
+
+        watcher.on('error', error => console.error(`❌ Error watching file ${logEntry.path}:`, error));
+    });
+
+    // Send monitored logs to the watchlog server after startup
+    setTimeout(() => {
+        if (monitorLogs.length > 0 && process.env.WATCHLOG_APIKEY && process.env.UUID) {
+            watchlogServerSocket.emit("watchlist/listfile", {
+                monitorLogs,
+                apiKey: process.env.WATCHLOG_APIKEY,
+                uuid: process.env.UUID
+            });
+        } else {
+            console.log(`🛑 Missing environment variables: WATCHLOG_APIKEY or UUID.`);
+        }
+    }, 10000);
+}
 
 // ** Start Monitoring Logs **
 startMonitoring();
