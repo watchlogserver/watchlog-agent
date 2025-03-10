@@ -70,19 +70,17 @@ function validatePatterns(logs) {
 
 // ** Detect Level Dynamically **
 function detectLogLevel(message, service) {
-    // Convert short levels (MongoDB: I, E, W) into readable levels
     const levelMappings = {
-        "I": "INFO",
-        "E": "ERROR",
-        "W": "WARNING",
-        "F": "FATAL",
-        "D": "DEBUG",
-        "C": "CRITICAL",
-        "N": "NOTICE"
+        "I": "INFO", "E": "ERROR", "W": "WARNING", "F": "FATAL",
+        "D": "DEBUG", "C": "CRITICAL", "N": "NOTICE",
+        "INFO": "INFO", "WARNING": "WARNING", "ERROR": "ERROR", 
+        "DEBUG": "DEBUG", "FATAL": "FATAL", "CRITICAL": "CRITICAL", 
+        "NOTICE": "NOTICE", "TRACE": "TRACE", "VERBOSE": "VERBOSE",
+        "ALERT": "ALERT", "EMERG": "EMERGENCY", "CRIT": "CRITICAL", "WARN": "WARNING"
     };
 
     // Extract log level from message
-    let detectedLevel = message.match(/\b(INFO|WARNING|ERROR|DEBUG|FATAL|CRITICAL|NOTICE|TRACE|VERBOSE|I|E|W|F|D|C|N)\b/i);
+    let detectedLevel = message.match(/\b(INFO|WARNING|ERROR|DEBUG|FATAL|CRITICAL|NOTICE|TRACE|VERBOSE|ALERT|EMERG|CRIT|WARN|I|E|W|F|D|C|N)\b/i);
     
     if (detectedLevel) {
         let rawLevel = detectedLevel[1].toUpperCase();
@@ -91,6 +89,7 @@ function detectLogLevel(message, service) {
 
     return "INFO"; // Default level
 }
+
 
 function parseAutoLogFormat(log, service) {
     const pattern = autoPatterns[service] || autoPatterns.default;
