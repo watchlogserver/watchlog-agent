@@ -121,6 +121,8 @@ function parseAutoLogFormat(log, service) {
 
 // ** Process Each Log Line **
 function processLogLine(log, config) {
+    if (!log.trim()) return; // Ignore empty lines
+
     let logData = {
         date: new Date().toISOString(),
         message: log,
@@ -144,6 +146,13 @@ function processLogLine(log, config) {
             logData.date = parsedDate.toISOString();
             logData.level = match.groups?.level || "INFO";
             logData.message = match.groups?.message?.trim() || log; // Ensure message isn't empty
+
+            // Avoid duplicate logs by checking recent logs
+            if (recentLogs.has(logData.message)) return;
+            recentLogs.add(logData.message);
+
+            // Clean up recent logs cache after a while
+            setTimeout(() => recentLogs.delete(logData.message), 5000);
         }
     } else if (config.format === "auto") {
         logData = { ...logData, ...parseAutoLogFormat(log, config.service) };
@@ -154,7 +163,9 @@ function processLogLine(log, config) {
 
 
 
-// ** Monitor Log Files **
+
+let recentLogs = new Set();
+
 function startMonitoring() {
     logConfig.logs.forEach(logEntry => {
         if (!fs.existsSync(logEntry.path)) {
@@ -165,25 +176,22 @@ function startMonitoring() {
         console.log(`👀 Monitoring: ${logEntry.name} (${logEntry.path})`);
         monitorLogs.push(logEntry);
 
-        chokidar.watch(logEntry.path, { persistent: true, ignoreInitial: false })
+        chokidar.watch(logEntry.path, { persistent: true, ignoreInitial: true })
             .on('change', filePath => {
-                const stream = fs.createReadStream(filePath, { encoding: 'utf8', start: fs.statSync(filePath).size - 500 });
-                stream.on('data', data => {
+                fs.readFile(filePath, 'utf8', (err, data) => {
+                    if (err) {
+                        console.error(`Error reading file ${filePath}:`, err);
+                        return;
+                    }
+
                     const lines = data.split('\n').filter(line => line.trim() !== "");
                     lines.forEach(line => processLogLine(line, logEntry));
                 });
             })
             .on('error', error => console.error(`Error watching file ${logEntry.path}:`, error));
     });
-
-    setTimeout(() => {
-        if (monitorLogs.length > 0 && process.env.WATCHLOG_APIKEY && process.env.UUID) {
-            watchlogServerSocket.emit("watchlist/listfile", { monitorLogs, apiKey: process.env.WATCHLOG_APIKEY, uuid: process.env.UUID })
-        } else {
-            console.log(process.env.UUID);
-        }
-    }, 10000);
 }
+
 
 // ** Start Monitoring Logs **
 startMonitoring();
