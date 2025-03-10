@@ -192,18 +192,16 @@ function startMonitoring() {
                 let buffer = "";
                 stream.on('data', chunk => {
                     buffer += chunk;
-                    const lines = buffer.split('\n');
-
-                    // Keep only complete lines, store the remainder in buffer
+                    // Split on both \n and \r\n to handle different OS newlines
+                    const lines = buffer.split(/\r?\n/);
+                    
+                    // The last element might be an incomplete line.
                     buffer = lines.pop(); 
-
+                
                     lines.forEach(line => {
-                        if (line.trim() && !recentLogs.has(line)) {
+                        // Only process if line is not empty
+                        if (line.trim()) {
                             processLogLine(line, logEntry);
-                            recentLogs.add(line);
-
-                            // Remove old logs after 5 seconds to avoid memory leaks
-                            setTimeout(() => recentLogs.delete(line), 5000);
                         }
                     });
                 });
