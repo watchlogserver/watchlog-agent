@@ -1,16 +1,14 @@
 const fs = require('fs');
 const chokidar = require('chokidar');
-// اتصال به سرور Watchlog
 const watchlogServerSocket = require("./socketServer");
-let monitorLogs = []
 
-// فایل پیکربندی لاگ‌ها
+let monitorLogs = [];
 const CONFIG_FILE = 'log-watchlist.json';
-console.log(CONFIG_FILE)
-let uniqueNames = new Set(); // برای جلوگیری از نام‌های تکراری
+
+console.log(CONFIG_FILE);
+let uniqueNames = new Set();
 let logConfig = loadConfig();
 
-// الگوهای استاندارد برای `auto`
 const autoPatterns = {
     nginx: /^(\S+) - - \[(.*?)\] "(.*?)" (\d+) (\d+) "(.*?)" "(.*?)"/,
     pm2: /^\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\] \[([A-Z]+)\] (.+)$/,
@@ -22,9 +20,6 @@ const autoPatterns = {
     default: /^(.*?)\s+(\w+):\s+(.*)$/,
 };
 
-const VALID_LEVELS = ["success", "info", "warning", "error", "critical"]; // لیست معتبر
-
-// تابع خواندن فایل تنظیمات
 function loadConfig() {
     if (!fs.existsSync(CONFIG_FILE)) {
         console.error(`Error: ${CONFIG_FILE} not found!`);
@@ -43,10 +38,8 @@ function loadConfig() {
     }
 }
 
-// تابع بررسی و تصحیح نام‌های تکراری
 function ensureUniqueNames(logs) {
     uniqueNames.clear();
-
     logs.forEach(log => {
         let originalName = log.name;
         let newName = originalName;
@@ -62,7 +55,6 @@ function ensureUniqueNames(logs) {
     });
 }
 
-// تابع بررسی صحت `Regex` برای `custom pattern`
 function validatePatterns(logs) {
     logs.forEach(log => {
         if (log.format === "custom" && log.pattern) {
@@ -76,84 +68,77 @@ function validatePatterns(logs) {
     });
 }
 
+// ** Detect Level Dynamically **
+function detectLogLevel(message, service) {
+    // Convert short levels (MongoDB: I, E, W) into readable levels
+    const levelMappings = {
+        "I": "INFO",
+        "E": "ERROR",
+        "W": "WARNING",
+        "F": "FATAL",
+        "D": "DEBUG",
+        "C": "CRITICAL",
+        "N": "NOTICE"
+    };
+
+    // Extract log level from message
+    let detectedLevel = message.match(/\b(INFO|WARNING|ERROR|DEBUG|FATAL|CRITICAL|NOTICE|TRACE|VERBOSE|I|E|W|F|D|C|N)\b/i);
+    
+    if (detectedLevel) {
+        let rawLevel = detectedLevel[1].toUpperCase();
+        return levelMappings[rawLevel] || rawLevel; // Convert to mapped level or return as-is
+    }
+
+    return "INFO"; // Default level
+}
+
+// ** Process Logs with Auto-detection **
 function parseAutoLogFormat(log, service) {
     const pattern = autoPatterns[service] || autoPatterns.default;
     const match = log.match(pattern);
 
     if (match) {
-        let extractedDate = match[1] || null;
-        let parsedDate = new Date(extractedDate);
-
-        if (!extractedDate || isNaN(parsedDate.getTime())) {
-            parsedDate = new Date(); // Fallback to current timestamp if invalid
-        }
-
         return {
-            date: parsedDate.toISOString(),
-            level: match[2] || "info",
+            date: new Date(match[1] || Date.now()).toISOString(),
+            level: detectLogLevel(match[2] || match[3] || log, service), // Extract level dynamically
             message: match[3] || log
         };
     }
 
-    // اگر فرمت تشخیص داده نشد، لاگ رو به‌صورت متنی ارسال کن
     return {
         date: new Date().toISOString(),
-        level: "info",
+        level: "INFO",
         message: log
     };
 }
 
-
-// پردازش لاگ
+// ** Process Each Log Line **
 function processLogLine(log, config) {
     let logData = {
-        date: new Date().toISOString(),  // This line might be causing the error
+        date: new Date().toISOString(),
         message: log,
-        level: "info",
+        level: "INFO",
         service: config.service,
         name: config.name
     };
     
-    // custom format and use pattern
     if (config.format === "custom" && config.pattern) {
         const regex = new RegExp(config.pattern);
         const match = log.match(regex);
 
         if (match) {
-            let extractedDate = match[1] || null;
-            
-            if (extractedDate) {
-                let parsedDate = new Date(extractedDate);
-                if (!isNaN(parsedDate.getTime())) {
-                    logData.date = parsedDate.toISOString();
-                } else {
-                    logData.date = new Date().toISOString(); // Fallback to current time if invalid
-                }
-            } else {
-                logData.date = new Date().toISOString(); // Default if no date is found
-            }
-        
-            logData.level = match[2] || "info";
+            logData.date = new Date(match[1] || Date.now()).toISOString();
+            logData.level = detectLogLevel(match[2] || match[3] || log, config.service);
             logData.message = match[3] || log;
         }
-    }
-    // format auto
-    else if (config.format === "auto") {
+    } else if (config.format === "auto") {
         logData = { ...logData, ...parseAutoLogFormat(log, config.service) };
     }
 
-    // بررسی کنیم که مقدار `level` معتبر باشه
-    if (!VALID_LEVELS.includes(logData.level.toLowerCase())) {
-        logData.level = "info";
-    }
-
-
-
-    // Send log with WebSocket
     watchlogServerSocket.emit("logs/watchlist", logData);
 }
 
-// مانیتور کردن تمام فایل‌های ثبت شده در `log-watchlist.json`
+// ** Monitor Log Files **
 function startMonitoring() {
     logConfig.logs.forEach(logEntry => {
         if (!fs.existsSync(logEntry.path)) {
@@ -162,9 +147,8 @@ function startMonitoring() {
         }
 
         console.log(`👀 Monitoring: ${logEntry.name} (${logEntry.path})`);
-        monitorLogs.push(logEntry)
+        monitorLogs.push(logEntry);
 
-        // استفاده از chokidar برای تشخیص تغییرات در فایل‌های لاگ
         chokidar.watch(logEntry.path, { persistent: true, ignoreInitial: false })
             .on('change', filePath => {
                 const stream = fs.createReadStream(filePath, { encoding: 'utf8', start: fs.statSync(filePath).size - 500 });
@@ -176,24 +160,19 @@ function startMonitoring() {
             .on('error', error => console.error(`Error watching file ${logEntry.path}:`, error));
     });
 
-
     setTimeout(() => {
         if (monitorLogs.length > 0 && process.env.WATCHLOG_APIKEY && process.env.UUID) {
             watchlogServerSocket.emit("watchlist/listfile", { monitorLogs, apiKey: process.env.WATCHLOG_APIKEY, uuid: process.env.UUID })
         } else {
-            console.log(process.env.UUID)
+            console.log(process.env.UUID);
         }
-    }, 10000)
+    }, 10000);
 }
 
-// اجرای مانیتورینگ
+// ** Start Monitoring Logs **
 startMonitoring();
 
-
-
-
-
-// در صورت تغییر `log-watchlist.json`، تنظیمات را مجدد بارگذاری کن
+// ** Reload Config if `log-watchlist.json` Changes **
 chokidar.watch(CONFIG_FILE, { persistent: true })
     .on('change', () => {
         console.log("🔄 Reloading config...");
