@@ -92,14 +92,20 @@ function detectLogLevel(message, service) {
     return "INFO"; // Default level
 }
 
-// ** Process Logs with Auto-detection **
 function parseAutoLogFormat(log, service) {
     const pattern = autoPatterns[service] || autoPatterns.default;
     const match = log.match(pattern);
 
     if (match) {
+        let extractedDate = match[1] || null;
+        let parsedDate = extractedDate ? new Date(extractedDate) : new Date(); // Default to current time
+
+        if (isNaN(parsedDate.getTime())) {
+            parsedDate = new Date(); // Fallback if the extracted date is invalid
+        }
+
         return {
-            date: new Date(match[1] || Date.now()).toISOString(),
+            date: parsedDate.toISOString(),
             level: detectLogLevel(match[2] || match[3] || log, service), // Extract level dynamically
             message: match[3] || log
         };
@@ -111,6 +117,7 @@ function parseAutoLogFormat(log, service) {
         message: log
     };
 }
+
 
 // ** Process Each Log Line **
 function processLogLine(log, config) {
