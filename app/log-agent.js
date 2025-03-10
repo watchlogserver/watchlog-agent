@@ -165,6 +165,7 @@ function processLogLine(log, config) {
 
 
 const LOG_READ_SIZE = 500; // Adjust this value if necessary
+let recentLogs = new Set(); // Prevent duplicate logs in a short time window
 
 function startMonitoring() {
     logConfig.logs.forEach(logEntry => {
