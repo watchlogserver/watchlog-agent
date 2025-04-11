@@ -17,6 +17,9 @@ const dockerIntegration = require('./integrations/docker')
 const mongoIntegration = require('./integrations/mongo')
 const redisIntegration = require('./integrations/redis')
 const nginxIntegration = require('./integrations/nginx')
+const postgresIntegration = require('./integrations/postgresql');
+const mysqlIntegration = require('./integrations/mysql');
+
 const logagent = require('./log-agent')
 let customMetrics = []
 
@@ -82,7 +85,7 @@ module.exports = class Application {
             try {
                 if (watchlogServerSocket.connected) {
                     let body = req.query
-                    if(!body.count && body.value){
+                    if (!body.count && body.value) {
                         body.count = body.value
                     }
 
@@ -306,7 +309,7 @@ module.exports = class Application {
 
 
             try {
-                
+
                 if (watchlogServerSocket.connected) {
                     let body = req.query
                     body.count = Number(body.count)
@@ -537,9 +540,9 @@ module.exports = class Application {
                     }
                 }
             } catch (error) {
-                
+
             }
-            
+
         })
     }
 
@@ -591,6 +594,50 @@ module.exports = class Application {
         } catch (error) {
 
         }
+        try {
+            for (let integrate of integrations) {
+                if (integrate.service === 'postgresql' && integrate.monitor === true) {
+                    let username = integrate.username || "";
+                    let password = integrate.password || "";
+                    let port = integrate.port || "5432";
+                    let host = integrate.host || "localhost";
+                    let databases = Array.isArray(integrate.database) ? integrate.database : [integrate.database];
+        
+                    postgresIntegration.getData(host, port, username, password, databases, (result) => {
+                        if (result) {
+                            watchlogServerSocket.emit("integrations/postgresqlservice", {
+                                data: result
+                            });
+                        }
+                    });
+                }
+            }
+        } catch (error) {
+            console.error("PostgreSQL Integration Error:", error.message);
+        }
+        
+        try {
+            for (let integrate of integrations) {
+                if (integrate.service === 'mysql' && integrate.monitor === true) {
+                    let username = integrate.username || "";
+                    let password = integrate.password || "";
+                    let port = integrate.port || "3306";
+                    let host = integrate.host || "localhost";
+                    let databases = Array.isArray(integrate.database) ? integrate.database : [integrate.database];
+        
+                    mysqlIntegration.getData(host, port, username, password, databases, (result) => {
+                        if (result) {
+                            watchlogServerSocket.emit("integrations/mysqlservice", {
+                                data: result
+                            });
+                        }
+                    });
+                }
+            }
+        } catch (error) {
+            console.error("MySQL Integration Error:", error.message);
+        }
+        
 
         try {
             for (let integrate in integrations) {
