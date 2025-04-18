@@ -1,12 +1,25 @@
 const { Client } = require('pg');
+const agentQueryPatterns = [
+    'max_connections',
+    'server_version',
+    'pg_stat_activity',
+    'pg_stat_database',
+    'pg_locks',
+    'pg_stat_statements',
+    'information_schema',
+    'pg_database_size',
+    'pg_indexes',
+    'pg_postmaster_start_time',
+    'version()'
+];
+const agentQueryFilters = agentQueryPatterns.map(p => `query NOT ILIKE '%${p}%'`).join(' AND ');
 
-exports.getData = async function (host, port, username, password, databases, callback) {
+exports.getData = async function (host, port, username, password, databases,  callback) {
     const result = {
         globalMetrics: {},
         databases: []
     };
 
-    // کوئری‌های کلی که یک‌بار از اولین دیتابیس اجرا می‌شن
     const globalQueries = {
         version: `SHOW server_version;`,
         uptime: `
@@ -49,29 +62,21 @@ exports.getData = async function (host, port, username, password, databases, cal
         locks: `SELECT count(*) FROM pg_locks;`,
         waiting_locks: `SELECT count(*) FROM pg_locks WHERE NOT granted;`
     };
-    
 
-    // helper برای اجرای کوئری
     const runQuery = async (client, query) => {
         try {
             const res = await client.query(query);
             const val = res.rows[0] && Object.values(res.rows[0])[0];
             return isNaN(val) ? val : parseFloat(val);
-        } catch (err) {
+        } catch {
             return null;
         }
     };
 
-    // اجرای global metrics از اولین دیتابیس
+    // اجرای global metrics فقط یک بار
     try {
         const firstDb = databases[0];
-        const globalClient = new Client({
-            user: username,
-            host,
-            database: firstDb,
-            password,
-            port
-        });
+        const globalClient = new Client({ user: username, host, database: firstDb, password, port });
         await globalClient.connect();
 
         for (const [key, query] of Object.entries(globalQueries)) {
@@ -81,34 +86,58 @@ exports.getData = async function (host, port, username, password, databases, cal
 
         await globalClient.end();
     } catch (e) {
-        console.error("❌ Error collecting global metrics:", e.message);
+        console.error("❌PostgresError Error collecting global metrics:", e.message);
     }
 
-    // اجرای متریک‌ها برای هر دیتابیس
+    // اجرای متریک‌ها و query stats برای هر دیتابیس
     for (const db of databases) {
         const dbMetrics = { db };
         let hasError = false;
 
         try {
-            const client = new Client({
-                user: username,
-                host,
-                database: db,
-                password,
-                port
-            });
+            const client = new Client({ user: username, host, database: db, password, port });
             await client.connect();
 
+            // متریک‌ها
             for (const [key, query] of Object.entries(dbQueries)) {
                 const actualQuery = typeof query === 'function' ? query(db) : query;
                 const value = await runQuery(client, actualQuery);
-
                 if (value === null) {
                     hasError = true;
                     break;
                 }
-
                 dbMetrics[key] = value;
+            }
+
+            // query stats
+            try {
+                const checkColumns = await client.query(`
+                    SELECT column_name FROM information_schema.columns
+                    WHERE table_name = 'pg_stat_statements';
+                `);
+
+                const columnNames = checkColumns.rows.map(row => row.column_name);
+                const hasTotalExecTime = columnNames.includes('total_exec_time');
+                const hasMeanExecTime = columnNames.includes('mean_exec_time');
+                const totalTimeCol = hasTotalExecTime ? 'total_exec_time' : 'total_time';
+                const meanTimeCol = hasMeanExecTime ? 'mean_exec_time' : 'mean_time';
+
+                const statQuery = `
+                    SELECT query, calls,
+                           ROUND(${totalTimeCol}::numeric, 2) AS total_time_ms,
+                           ROUND(${meanTimeCol}::numeric, 2) AS avg_time_ms,
+                           rows
+                    FROM pg_stat_statements
+                    WHERE ${agentQueryFilters}
+                    ORDER BY ${totalTimeCol} DESC
+                    LIMIT 10;
+                `;
+
+                const statRes = await client.query(statQuery);
+                dbMetrics.queryStats = statRes.rows;
+            } catch (err) {
+                console.warn(`⚠️PostgresError Cannot load query stats for ${db}:`, err.message);
+                dbMetrics.queryStats = [];
             }
 
             await client.end();

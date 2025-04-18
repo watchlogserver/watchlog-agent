@@ -29,7 +29,7 @@
         "port": "5432",
         "username": "",
         "password": "",
-        "database": ["postgres"]
+        "database": [""]
     },
     {
         "service": "mysql",

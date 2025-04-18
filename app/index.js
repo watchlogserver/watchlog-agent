@@ -23,7 +23,6 @@ const mysqlIntegration = require('./integrations/mysql');
 const logagent = require('./log-agent')
 let customMetrics = []
 
-
 module.exports = class Application {
     constructor() {
         this.startApp()
