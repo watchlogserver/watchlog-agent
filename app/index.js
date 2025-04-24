@@ -57,7 +57,6 @@ module.exports = class Application {
         if (await this.checkApiKey(uuid, systemOsfo.distro, systemOsfo.release)) {
             this.runAgent(uuid)
         } else {
-            console.log("Something went wrong.")
             setTimeout(() => {
                 this.runAgent()
             }, 10000)
@@ -74,7 +73,7 @@ module.exports = class Application {
 
         this.getRouter(uuid)
     
-        setInterval(this.collectMetrics, 3000);
+        setInterval(this.collectMetrics, 60000);
     }
 
     getRouter(uuid) {
