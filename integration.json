@@ -24,12 +24,12 @@
     },
     {
         "service": "postgresql",
-        "monitor": false,
+        "monitor": true,
         "host": "localhost",
         "port": "5432",
-        "username": "",
-        "password": "",
-        "database": [""]
+        "username": "postgres",
+        "password": "mohammad",
+        "database": ["postgres", "newdb", "test", "xyz"]
     },
     {
         "service": "mysql",

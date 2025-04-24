@@ -74,7 +74,7 @@ module.exports = class Application {
 
         this.getRouter(uuid)
     
-        setInterval(this.collectMetrics, 60000);
+        setInterval(this.collectMetrics, 3000);
     }
 
     getRouter(uuid) {

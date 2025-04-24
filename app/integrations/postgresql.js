@@ -14,10 +14,11 @@ const agentQueryPatterns = [
 ];
 const agentQueryFilters = agentQueryPatterns.map(p => `query NOT ILIKE '%${p}%'`).join(' AND ');
 
-exports.getData = async function (host, port, username, password, databases,  callback) {
+exports.getData = async function (host, port, username, password, databases, callback) {
     const result = {
         globalMetrics: {},
-        databases: []
+        databases: [],
+        queryStats: []
     };
 
     const globalQueries = {
@@ -30,13 +31,24 @@ exports.getData = async function (host, port, username, password, databases,  ca
     };
 
     const dbQueries = {
-        active_connections: `SELECT count(*) FROM pg_stat_activity WHERE state = 'active';`,
-        idle_connections: `SELECT count(*) FROM pg_stat_activity WHERE state = 'idle';`,
-        blocked_queries: `
-            SELECT count(*) FROM pg_locks bl
-            JOIN pg_stat_activity a ON bl.pid = a.pid
-            WHERE NOT bl.granted;
-        `,
+        active_connections: `
+        SELECT count(*) 
+        FROM pg_stat_activity 
+        WHERE state = 'active' 
+          AND datname = current_database();
+      `,
+        idle_connections: `
+      SELECT count(*) 
+      FROM pg_stat_activity 
+      WHERE state = 'idle' 
+        AND datname = current_database();
+    `, blocked_queries: `
+    SELECT count(*) 
+    FROM pg_locks bl
+    JOIN pg_stat_activity a ON bl.pid = a.pid
+    WHERE NOT bl.granted 
+      AND a.datname = current_database();
+  `,
         xact_commit: `SELECT xact_commit FROM pg_stat_database WHERE datname = current_database();`,
         xact_rollback: `SELECT xact_rollback FROM pg_stat_database WHERE datname = current_database();`,
         cache_hit_ratio: `
@@ -56,11 +68,22 @@ exports.getData = async function (host, port, username, password, databases,  ca
         tup_inserted: `SELECT tup_inserted FROM pg_stat_database WHERE datname = current_database();`,
         tup_updated: `SELECT tup_updated FROM pg_stat_database WHERE datname = current_database();`,
         tup_deleted: `SELECT tup_deleted FROM pg_stat_database WHERE datname = current_database();`,
-        db_size: (db) => `SELECT pg_database_size('${db}');`,
-        table_count: `SELECT count(*) FROM information_schema.tables WHERE table_schema='public';`,
+        db_size: `SELECT pg_database_size(current_database());`,
+        table_count: `SELECT count(*) FROM information_schema.tables WHERE table_catalog = current_database() AND table_schema = 'public' AND table_type = 'BASE TABLE';`,
         index_count: `SELECT count(*) FROM pg_indexes WHERE schemaname='public';`,
-        locks: `SELECT count(*) FROM pg_locks;`,
-        waiting_locks: `SELECT count(*) FROM pg_locks WHERE NOT granted;`
+        locks: `
+        SELECT count(*) 
+        FROM pg_locks l
+        JOIN pg_stat_activity a ON l.pid = a.pid
+        WHERE a.datname = current_database();
+      `,
+        waiting_locks: `
+      SELECT count(*) 
+      FROM pg_locks l
+      JOIN pg_stat_activity a ON l.pid = a.pid
+      WHERE NOT l.granted 
+        AND a.datname = current_database();
+    `,
     };
 
     const runQuery = async (client, query) => {
@@ -90,7 +113,10 @@ exports.getData = async function (host, port, username, password, databases,  ca
     }
 
     // اجرای متریک‌ها و query stats برای هر دیتابیس
+    let i = 0
     for (const db of databases) {
+
+
         const dbMetrics = { db };
         let hasError = false;
 
@@ -109,36 +135,43 @@ exports.getData = async function (host, port, username, password, databases,  ca
                 dbMetrics[key] = value;
             }
 
-            // query stats
+
             try {
-                const checkColumns = await client.query(`
-                    SELECT column_name FROM information_schema.columns
-                    WHERE table_name = 'pg_stat_statements';
-                `);
+                if (i == 0) {
+                    const checkColumns = await client.query(`
+                        SELECT column_name FROM information_schema.columns
+                        WHERE table_name = 'pg_stat_statements';
+                    `);
+                    const columnNames = checkColumns.rows.map(row => row.column_name);
+                    const hasTotalExecTime = columnNames.includes('total_exec_time');
+                    const hasMeanExecTime = columnNames.includes('mean_exec_time');
+                    const totalTimeCol = hasTotalExecTime ? 'total_exec_time' : 'total_time';
+                    const meanTimeCol = hasMeanExecTime ? 'mean_exec_time' : 'mean_time';
 
-                const columnNames = checkColumns.rows.map(row => row.column_name);
-                const hasTotalExecTime = columnNames.includes('total_exec_time');
-                const hasMeanExecTime = columnNames.includes('mean_exec_time');
-                const totalTimeCol = hasTotalExecTime ? 'total_exec_time' : 'total_time';
-                const meanTimeCol = hasMeanExecTime ? 'mean_exec_time' : 'mean_time';
+                    // گرفتن کوئری‌های فیلترشده
+                    const statQuery = `
+                        SELECT query, calls,
+                               ROUND(${totalTimeCol}::numeric, 2) AS total_time_ms,
+                               ROUND(${meanTimeCol}::numeric, 2) AS avg_time_ms,
+                               rows
+                        FROM pg_stat_statements
+                        WHERE ${agentQueryFilters}
+                          AND query NOT ILIKE '%watchlog-%'
+                        ORDER BY ${totalTimeCol} DESC
+                        LIMIT 10;
+                    `;
 
-                const statQuery = `
-                    SELECT query, calls,
-                           ROUND(${totalTimeCol}::numeric, 2) AS total_time_ms,
-                           ROUND(${meanTimeCol}::numeric, 2) AS avg_time_ms,
-                           rows
-                    FROM pg_stat_statements
-                    WHERE ${agentQueryFilters}
-                    ORDER BY ${totalTimeCol} DESC
-                    LIMIT 10;
-                `;
+                    const statRes = await client.query(statQuery);
+                    result.queryStats = statRes.rows;
+                }
 
-                const statRes = await client.query(statQuery);
-                dbMetrics.queryStats = statRes.rows;
+
+                i++
             } catch (err) {
                 console.warn(`⚠️PostgresError Cannot load query stats for ${db}:`, err.message);
                 dbMetrics.queryStats = [];
             }
+
 
             await client.end();
         } catch (err) {
