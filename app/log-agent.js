@@ -226,7 +226,7 @@ function startMonitoring() {
                 uuid: process.env.UUID
             });
         } else {
-            console.log(`🛑 Missing environment variables: WATCHLOG_APIKEY or UUID.`);
+            // console.log(`🛑 Missing environment variables: WATCHLOG_APIKEY or UUID.`);
         }
     }, 10000);
 }

@@ -58,7 +58,7 @@ module.exports = class Application {
             this.runAgent(uuid)
         } else {
             setTimeout(() => {
-                this.runAgent()
+                this.startApp()
             }, 10000)
         }
         // send axios request for check api
@@ -546,7 +546,7 @@ module.exports = class Application {
 
     async checkApiKey(uuid, distro, release) {
         try {
-            let response = await axios.get(`${watchlog_server}/checkapikey?apiKey=${apiKey}`)
+            let response = await axios.get(`${watchlog_server}/checkapikey?apiKey=${apiKey}&uuid=${uuid}`)
             if (response.status == 200) {
                 if (response.data.status == "success") {
 
@@ -594,7 +594,7 @@ module.exports = class Application {
         }
         try {
             for (let integrate of integrations) {
-                if (integrate.service === 'postgresql' && integrate.monitor === true) {
+                if (integrate.service === 'postgresql' && integrate.monitor === true && integrate.database.length > 0) {
                     let username = integrate.username || "";
                     let password = integrate.password || "";
                     let port = integrate.port || "5432";
@@ -616,7 +616,7 @@ module.exports = class Application {
         
         try {
             for (let integrate of integrations) {
-                if (integrate.service === 'mysql' && integrate.monitor === true) {
+                if (integrate.service === 'mysql' && integrate.monitor === true && integrate.database.length > 0) {
                     let username = integrate.username || "";
                     let password = integrate.password || "";
                     let port = integrate.port || "3306";
