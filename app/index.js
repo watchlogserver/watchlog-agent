@@ -72,11 +72,24 @@ module.exports = class Application {
         }));
 
         this.getRouter(uuid)
-    
+
         setInterval(this.collectMetrics, 60000);
     }
 
     getRouter(uuid) {
+        app.post("/apm", async (req, res) => {
+            try {
+                if (req.body.metrics) {
+                    if (watchlogServerSocket.connected) {
+                        watchlogServerSocket.emit("APM", {
+                            data: req.body.metrics,
+                            platformName: req.body.platformName ? req.body.platformName : "express"
+                        })
+                    }
+                }
+            } catch (error) {
+            }
+        })
         app.get("/", async (req, res) => {
             res.end()
 
@@ -600,7 +613,7 @@ module.exports = class Application {
                     let port = integrate.port || "5432";
                     let host = integrate.host || "localhost";
                     let databases = Array.isArray(integrate.database) ? integrate.database : [integrate.database];
-        
+
                     postgresIntegration.getData(host, port, username, password, databases, (result) => {
                         if (result) {
                             watchlogServerSocket.emit("integrations/postgresqlservice", {
@@ -613,7 +626,7 @@ module.exports = class Application {
         } catch (error) {
             console.error("PostgreSQL Integration Error:", error.message);
         }
-        
+
         try {
             for (let integrate of integrations) {
                 if (integrate.service === 'mysql' && integrate.monitor === true && integrate.database.length > 0) {
@@ -622,7 +635,7 @@ module.exports = class Application {
                     let port = integrate.port || "3306";
                     let host = integrate.host || "localhost";
                     let databases = Array.isArray(integrate.database) ? integrate.database : [integrate.database];
-        
+
                     mysqlIntegration.getData(host, port, username, password, databases, (result) => {
                         if (result) {
                             watchlogServerSocket.emit("integrations/mysqlservice", {
@@ -635,7 +648,7 @@ module.exports = class Application {
         } catch (error) {
             console.error("MySQL Integration Error:", error.message);
         }
-        
+
 
         try {
             for (let integrate in integrations) {
