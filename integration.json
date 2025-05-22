@@ -1,5 +1,15 @@
 [
     {
+        "service": "iis",
+        "monitor": true,
+        "fieldIndexes": {
+            "sc-status": 11,
+            "cs-method": 3,
+            "cs-uri-stem": 4,
+            "time-taken": 14
+        }
+    },
+    {
         "service": "docker",
         "monitor": false
     },
@@ -18,9 +28,9 @@
     },
     {
         "monitor": false,
-        "service" : "nginx",
-        "accessLog" : "/var/log/nginx/access.log",
-        "nginx_status_url" : "http://localhost:8080/nginx_status"
+        "service": "nginx",
+        "accessLog": "/var/log/nginx/access.log",
+        "nginx_status_url": "http://localhost:8080/nginx_status"
     },
     {
         "service": "postgresql",
