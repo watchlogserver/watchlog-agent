@@ -14,7 +14,6 @@ let nginxConfig = integrations.find(i => i.service === 'nginx');
 let previousStatus = null;
 
 const logFilePath = nginxConfig?.accessLog || '/var/log/nginx/access.log';
-const statusUrl = nginxConfig?.nginx_status_url || 'http://localhost:8080/nginx_status';
 
 const logRegex = /^\S+ - \S+ \[[^\]]+\] "([A-Z]+) ([^ ]+) HTTP\/[^"]+" .* (\d{3}) \d+ ".*" ".*" \S+ \S+ \S+ \S+ \S+$/;
 
