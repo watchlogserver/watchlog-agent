@@ -1,7 +1,7 @@
 [
     {
         "service": "iis",
-        "monitor": true,
+        "monitor": false,
         "fieldIndexes": {
             "sc-status": 11,
             "cs-method": 3,
