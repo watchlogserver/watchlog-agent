@@ -3,6 +3,7 @@ const path = require('path');
 const readline = require('readline');
 const { exec } = require('child_process');
 const integrations = require("./../../integration.json")
+const watchlogServerSocket = require("../socketServer");
 
 const logRoot = 'C:\\inetpub\\logs\\LogFiles';
 const tailBuffers = {};
@@ -69,21 +70,20 @@ async function monitorSiteStates() {
         const shouldSend = !lastState || lastState !== site.state;
 
         if (shouldSend) {
-            console.warn(`[IIS Agent] Site \"${site.name}\" state: ${lastState || 'unknown'} → ${site.state}`);
+            // console.warn(`[IIS Agent] Site \"${site.name}\" state: ${lastState || 'unknown'} → ${site.state}`);
             // ارسال وضعیت جدید یا تغییر یافته به سرور/داشبورد
-            // socket.emit('iis/site-status-update', {
-            //     name: site.name,
-            //     oldState: lastState || null,
-            //     newState: site.state,
-            //     timestamp: new Date().toISOString()
-            // });
+            watchlogServerSocket.emit('iis/site-status-update', {
+                name: site.name,
+                oldState: lastState || null,
+                newState: site.state,
+                timestamp: new Date().toISOString()
+            });
         }
 
         previousStates[site.name] = site.state;
         snapshot.push({ name: site.name, state: site.state });
     }
 
-    // snapshot کلی برای UI یا داشبورد
     // console.log('[WEBSITE STATES]', new Date().toISOString(), snapshot);
     // socket.emit('iis/site-status-snapshot', { timestamp: new Date().toISOString(), sites: snapshot });
 }
@@ -222,9 +222,8 @@ function flushTailBufferForSite(siteName) {
         avgResponseTimeMs: total ? Math.round(totalDuration / total) : 0
     });
 
-    console.log('[FLUSH]', new Date().toISOString(), siteName);
-    console.log('INFLUX', influxPayload);
-    console.log('ELASTIC', elasticPayload);
+    watchlogServerSocket.emit('integrations/iis.access.influx', influxPayload);
+    watchlogServerSocket.emit('integrations/iis.access.elastic', elasticPayload);
 
     tailBuffers[siteName] = [];
 }
