@@ -191,13 +191,14 @@ function flushTailBufferForSite(siteName) {
     const logs = tailBuffers[siteName];
     if (!logs || !logs.length) return;
 
-    let total = 0, ok_2xx = 0, errors_4xx = 0, errors_5xx = 0, totalDuration = 0;
+    let total = 0, ok_2xx = 0, redirects_3xx = 0, errors_4xx = 0, errors_5xx = 0, totalDuration = 0;
     const influxPayload = [];
     const elasticPayload = [];
 
     for (const log of logs) {
         total++;
         if (log.statusCode >= 200 && log.statusCode < 300) ok_2xx++;
+        else if (log.statusCode >= 300 && log.statusCode < 400) redirects_3xx++;
         else if (log.statusCode >= 400 && log.statusCode < 500) errors_4xx++;
         else if (log.statusCode >= 500) errors_5xx++;
         totalDuration += log.duration || 0;
@@ -217,6 +218,7 @@ function flushTailBufferForSite(siteName) {
         site: siteName,
         total,
         ok_2xx,
+        redirects_3xx,
         errors_4xx,
         errors_5xx,
         avgResponseTimeMs: total ? Math.round(totalDuration / total) : 0
