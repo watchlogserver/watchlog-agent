@@ -28,9 +28,8 @@
     },
     {
         "monitor": false,
-        "service": "nginx",
-        "accessLog": "/var/log/nginx/access.log",
-        "nginx_status_url": "http://localhost:8080/nginx_status"
+        "service" : "nginx",
+        "accessLog" : "/var/log/nginx/access.log"
     },
     {
         "service": "postgresql",

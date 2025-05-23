@@ -73,11 +73,12 @@ module.exports = class Application {
 
         this.getRouter(uuid)
 
-        setInterval(this.collectMetrics, 60000);
+        setInterval(this.collectMetrics, 2000);
     }
 
     getRouter(uuid) {
         app.post("/apm", async (req, res) => {
+            return console.log(req.body)
             try {
                 if (req.body.metrics) {
                     if (watchlogServerSocket.connected) {
