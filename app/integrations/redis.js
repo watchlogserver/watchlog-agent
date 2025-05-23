@@ -15,21 +15,28 @@ function execRedisCommand(command, callback) {
 function parseRedisInfo(infoString) {
     const lines = infoString.split('\n');
     const info = {};
-    const keyspace = {}; // To store keyspace information like key count
+    const keyspace = {};
+    
     lines.forEach(line => {
         if (line && !line.startsWith('#')) {
             const [key, value] = line.split(':');
-            // Check if line contains keyspace information (e.g., db0:keys=1000,...)
+            
             if (key.startsWith('db')) {
-                const dbInfo = value.split(',');
-                const keys = dbInfo[0].split('=')[1];
-                keyspace[key] = { keys: parseInt(keys, 10) };
+                // parse keyspace like db0:keys=1000,expires=50,...
+                const parts = value.split(',').map(p => p.trim());
+                const dbMetrics = {};
+                parts.forEach(p => {
+                    const [k, v] = p.split('=');
+                    dbMetrics[k] = parseInt(v, 10);
+                });
+                keyspace[key] = dbMetrics;
             } else {
                 info[key] = isNaN(value) ? value : parseFloat(value);
             }
         }
     });
-    info.keyspace = keyspace; // Add keyspace information to info object
+
+    info.keyspace = keyspace;
     return info;
 }
 

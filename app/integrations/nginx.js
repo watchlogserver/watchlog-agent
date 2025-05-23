@@ -43,12 +43,14 @@ function flushLogBuffer() {
     const stats = {};
     for (const log of logBuffer) {
         const key = log.origin;
-        if (!stats[key]) stats[key] = { total: 0, ok_2xx: 0, errors_4xx: 0, errors_5xx: 0 };
+        if (!stats[key]) stats[key] = { total: 0, ok_2xx: 0, redirects_3xx: 0, errors_4xx: 0, errors_5xx: 0 };
 
         stats[key].total++;
         if (log.status >= 200 && log.status < 300) stats[key].ok_2xx++;
+        else if (log.status >= 300 && log.status < 400) stats[key].redirects_3xx++;
         else if (log.status >= 400 && log.status < 500) stats[key].errors_4xx++;
         else if (log.status >= 500) stats[key].errors_5xx++;
+
     }
 
     const influxPayload = Object.entries(stats).map(([origin, values]) => ({
@@ -86,12 +88,12 @@ function monitorNginxStatus() {
                     }
                 });
             } else {
-                console.warn('[NGINX Agent] systemctl not available on this system');
+                console.log('[NGINX Agent] systemctl not available on this system');
                 previousStatus = null;
             }
         });
     } else {
-        console.warn('[NGINX Agent] NGINX status check not supported on this OS');
+        console.log('[NGINX Agent] NGINX status check not supported on this OS');
         previousStatus = null;
     }
 }
@@ -105,5 +107,5 @@ if (nginxConfig?.monitor && fs.existsSync(logFilePath)) {
     setInterval(flushLogBuffer, FLUSH_INTERVAL);
     setInterval(monitorNginxStatus, STATUS_CHECK_INTERVAL);
 } else {
-    console.warn('[NGINX Agent] Disabled or log file not found');
+    console.log('[NGINX Agent] Disabled or log file not found');
 }
