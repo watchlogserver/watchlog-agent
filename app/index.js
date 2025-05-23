@@ -78,7 +78,6 @@ module.exports = class Application {
 
     getRouter(uuid) {
         app.post("/apm", async (req, res) => {
-            return console.log(req.body)
             try {
                 if (req.body.metrics) {
                     if (watchlogServerSocket.connected) {
