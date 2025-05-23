@@ -17,6 +17,7 @@ const dockerIntegration = require('./integrations/docker')
 const mongoIntegration = require('./integrations/mongo')
 const redisIntegration = require('./integrations/redis')
 const nginxIntegration = require('./integrations/nginx')
+const iisIntegration = require('./integrations/iis-log-monitor')
 const postgresIntegration = require('./integrations/postgresql');
 const mysqlIntegration = require('./integrations/mysql');
 
