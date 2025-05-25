@@ -66,7 +66,7 @@ function processLogLine(line) {
   
     logBuffer.push({
       method,
-      normalizedPath,
+      path : normalizedPath,
       status,
       origin,
       userAgent,
