@@ -21,15 +21,11 @@ function normalizeDynamicPath(path) {
     if (!path) return path
   
     return path
-      // جایگزینی UUID
       .replace(/\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b/gi, ':uuid')
-      // جایگزینی Mongo ObjectId
       .replace(/\b[0-9a-f]{24}\b/g, ':objectId')
-      // جایگزینی عددهای جدا
       .replace(/\b\d+\b/g, ':id')
-      // جایگزینی slug انگلیسی بین /.../... فقط در موقعیتی خاص (مثلاً آخر مسیر)
-      .replace(/\/[a-z0-9\-]{3,}(?=\/|$)/gi, '/:slug')
   }
+  
   
   
 
