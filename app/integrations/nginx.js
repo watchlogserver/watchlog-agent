@@ -21,9 +21,14 @@ function normalizeDynamicPath(path) {
     if (!path) return path
   
     return path
+      // UUID استاندارد ۳۶ کاراکتری
       .replace(/\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b/gi, ':uuid')
+      // MongoDB ObjectId (۲۴ کاراکتر هگزادسیمال)
       .replace(/\b[0-9a-f]{24}\b/g, ':objectId')
+      // اعداد خالص
       .replace(/\b\d+\b/g, ':id')
+      // سگمنت‌هایی که شامل خط تیره‌اند (slug)
+      .replace(/\/[a-z0-9]*-[a-z0-9\-]*/gi, '/:slug')
   }
   
   
