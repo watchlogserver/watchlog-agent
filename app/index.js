@@ -74,7 +74,7 @@ module.exports = class Application {
 
         this.getRouter(uuid)
 
-        setInterval(this.collectMetrics, 2000);
+        setInterval(this.collectMetrics, 60000);
     }
 
     getRouter(uuid) {
@@ -564,7 +564,7 @@ module.exports = class Application {
             if (response.status == 200) {
                 if (response.data.status == "success") {
 
-                    watchlogServerSocket.emit("setApiKey", { apiKey, host: os.hostname(), ip: getSystemIP(), uuid: uuid, distro: distro, release: release })
+                    watchlogServerSocket.emit("setApiKey", { apiKey, host: os.hostname(), ip: getSystemIP(), uuid: uuid, distro: distro, release: release, agentVersion : "0.1.1" })
                     return true
                 } else {
                     if (response.data.message) {
@@ -866,7 +866,7 @@ watchlogServerSocket.on('reconnect', async (attemptNumber) => {
             uuid = process.env.UUID
         }
 
-        watchlogServerSocket.emit("setApiKey", { apiKey, host: os.hostname(), ip: getSystemIP(), uuid: uuid, distro: systemOsfo.distro, release: systemOsfo.release })
+        watchlogServerSocket.emit("setApiKey", { apiKey, host: os.hostname(), ip: getSystemIP(), uuid: uuid, distro: systemOsfo.distro, release: systemOsfo.release, agentVersion : "0.1.1" })
     }
 
 });

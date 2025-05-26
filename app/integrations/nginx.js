@@ -15,27 +15,77 @@ let previousStatus = null;
 
 const logFilePath = nginxConfig?.accessLog || '/var/log/nginx/access.log';
 
-const logRegex = /^\S+ - \S+ \[[^\]]+\] "([A-Z]+) ([^ ]+) HTTP\/[^"]+" .* (\d{3}) \d+ ".*" ".*" \S+ \S+ \S+ \S+ \S+$/;
+const logRegex = /^(\S+) - \S+ \[([^\]]+)\] "([A-Z]+) ([^ ]+) HTTP\/[^"]+" "([^"]+)" (\d{3}) \d+ "([^"]*)" "([^"]*)" ([\d.]+) ([\d.]+|-) ([\.\-]) (\S+) (\S+)$/;
 
-function normalizeApiPath(apiPath) {
-    return apiPath.replace(/\/([0-9a-fA-F]{24}|\d+)(?=\/|$)/g, '/:id');
-}
+function normalizeDynamicPath(path) {
+    if (!path) return path
+  
+    return path
+      // UUID استاندارد با dash
+      .replace(/\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b/gi, ':uuid')
+      // ObjectId مونگو (۲۴ کاراکتر هگز)
+      .replace(/\b[0-9a-f]{24}\b/gi, ':objectId')
+      // شناسه‌های ۳۲ کاراکتری هگز (مثلاً UUID بدون dash یا MD5)
+      .replace(/\b[0-9a-f]{32}\b/gi, ':hash')
+      // اعداد
+      .replace(/\b\d+\b/g, ':id')
+      // slugهایی که شامل dash هستند
+      .replace(/\/[a-z0-9]*-[a-z0-9\-]*/gi, '/:slug')
+  }
+  
+  
+  
+  
 
 function processLogLine(line) {
     const match = line.match(logRegex);
     if (!match) return;
-
-    const method = match[1];
-    let path = normalizeApiPath(match[2]);
-    const status = parseInt(match[3], 10);
-    const origin = 'nginx';
+  
+    const method = match[3];
+    const rawUrl = match[4];
+    const fullUrl = match[5];
+    const status = parseInt(match[6], 10);
+    const rawReferer = match[7];
+    const userAgent = match[8];
+    const requestTime = parseFloat(match[9]);
+    const upstreamTime = match[10] !== '-' ? parseFloat(match[10]) : null;
+    const sslProtocol = match[12];
+    const sslCipher = match[13];
+  
+    let origin = 'unknown';
+    let path = rawUrl;
+  
+    try {
+      const parsedUrl = new URL(fullUrl);
+      origin = parsedUrl.hostname;
+      path = parsedUrl.pathname;
+    } catch (e) {
+      // fallback
+      origin = 'invalid-url';
+      path = rawUrl.split('?')[0];
+    }
+    const normalizedPath = normalizeDynamicPath(path);
 
     if (!path) return;
-
-    logBuffer.push({ method, path, status, origin, raw: line });
-
+  
+    logBuffer.push({
+      method,
+      path : normalizedPath,
+      status,
+      origin,
+      userAgent,
+      requestTime,
+      upstreamTime,
+      sslProtocol,
+      sslCipher,
+      raw: line
+    });
+  
     if (logBuffer.length >= MAX_BUFFER) flushLogBuffer();
-}
+  }
+  
+
+
 
 function flushLogBuffer() {
     if (!logBuffer.length) return;
