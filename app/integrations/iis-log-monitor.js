@@ -34,6 +34,16 @@ function getWebsiteMap() {
     });
 }
 
+function normalizeDynamicPath(path) {
+    if (!path) return path;
+    return path
+        .replace(/\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b/gi, ':uuid')
+        .replace(/\b[0-9a-f]{24}\b/gi, ':objectId')
+        .replace(/\b[0-9a-f]{32}\b/gi, ':hash')
+        .replace(/\b\d+\b/g, ':id')
+        .replace(/\/[a-z0-9]*-[a-z0-9\-]*/gi, '/:slug');
+}
+
 function checkWebsiteStates() {
     return new Promise((resolve) => {
         exec('powershell -Command "Get-Website | Select-Object Name, State | ConvertTo-Json"', (err, stdout) => {
@@ -202,20 +212,21 @@ function flushTailBufferForSite(siteName) {
         else if (log.statusCode >= 400 && log.statusCode < 500) errors_4xx++;
         else if (log.statusCode >= 500) errors_5xx++;
         totalDuration += log.duration || 0;
+        const normalizedUrl = normalizeDynamicPath(log.url);
 
         elasticPayload.push({
             timestamp: new Date().toISOString(),
-            site: siteName,
+            origin: siteName,
             statusCode: log.statusCode,
             duration: log.duration,
             method: log.method,
-            url: log.url,
+            url: normalizedUrl,
             raw: log.rawLine || ''
         });
     }
 
     influxPayload.push({
-        site: siteName,
+        origin: siteName,
         total,
         ok_2xx,
         redirects_3xx,
