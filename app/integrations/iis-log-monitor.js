@@ -2,10 +2,9 @@ const fs = require('fs');
 const path = require('path');
 const readline = require('readline');
 const { exec } = require('child_process');
-const integrations = require("./../../integration.json")
+const integrations = require("./../../integration.json");
 const watchlogServerSocket = require("../socketServer");
 
-const logRoot = 'C:\\inetpub\\logs\\LogFiles';
 const tailBuffers = {};
 const statusIndexes = {};
 let iisConfig = {};
@@ -14,25 +13,6 @@ const previousStates = {}; // وضعیت قبلی هر سایت برای برر�
 const MAX_BUFFER_SIZE = 5000;
 const FLUSH_INTERVAL = 10000;
 const STATE_CHECK_INTERVAL = 5000;
-
-function getWebsiteMap() {
-    return new Promise((resolve) => {
-        exec('powershell -Command "Get-Website | Select-Object ID, Name | ConvertTo-Json"', (err, stdout) => {
-            if (err || !stdout) return resolve({});
-            try {
-                const parsed = JSON.parse(stdout.trim());
-                const websites = Array.isArray(parsed) ? parsed : [parsed];
-                const map = {};
-                for (const site of websites) {
-                    if (site.id && site.name) map[`W3SVC${site.id}`] = site.name;
-                }
-                resolve(map);
-            } catch {
-                resolve({});
-            }
-        });
-    });
-}
 
 function normalizeDynamicPath(path) {
     if (!path) return path;
@@ -43,61 +23,6 @@ function normalizeDynamicPath(path) {
         .replace(/\b\d+\b/g, ':id')
         .replace(/\/[a-z0-9]*-[a-z0-9\-]*/gi, '/:slug');
 }
-
-function checkWebsiteStates() {
-    return new Promise((resolve) => {
-        exec('powershell -Command "Get-Website | Select-Object Name, State | ConvertTo-Json"', (err, stdout) => {
-            if (err || !stdout) return resolve([]);
-            try {
-                const parsed = JSON.parse(stdout.trim());
-                const list = Array.isArray(parsed) ? parsed : [parsed];
-
-                const cleaned = list
-                    .filter(site => site && (site.name || site.Name))
-                    .map(site => ({
-                        name: site.name || site.Name,
-                        state: site.state || site.State
-                    }));
-
-                resolve(cleaned);
-            } catch (e) {
-                console.warn('[IIS Agent] Failed to parse website states:', e.message);
-                resolve([]);
-            }
-        });
-    });
-}
-
-
-async function monitorSiteStates() {
-    const sites = await checkWebsiteStates();
-    const snapshot = [];
-
-    for (const site of sites) {
-        const lastState = previousStates[site.name];
-
-        // وضعیت جدید یا تغییر یافته باید ارسال شود
-        const shouldSend = !lastState || lastState !== site.state;
-
-        if (shouldSend) {
-            // console.warn(`[IIS Agent] Site \"${site.name}\" state: ${lastState || 'unknown'} → ${site.state}`);
-            // ارسال وضعیت جدید یا تغییر یافته به سرور/داشبورد
-            watchlogServerSocket.emit('iis/site-status-update', {
-                name: site.name,
-                oldState: lastState || null,
-                newState: site.state,
-                timestamp: new Date().toISOString()
-            });
-        }
-
-        previousStates[site.name] = site.state;
-        snapshot.push({ name: site.name, state: site.state });
-    }
-
-    // console.log('[WEBSITE STATES]', new Date().toISOString(), snapshot);
-    // socket.emit('iis/site-status-snapshot', { timestamp: new Date().toISOString(), sites: snapshot });
-}
-
 
 function handleLogLine(line, filePath, siteName) {
     if (line.startsWith('#Fields:')) {
@@ -174,27 +99,91 @@ function tailFile(filePath, siteName) {
     });
 }
 
-async function setupTailForAllLogs() {
-    const websiteMap = await getWebsiteMap();
+function setupTailForAllLogs() {
+    const sites = iisConfig.sites || [];
 
-    for (const folder of fs.readdirSync(logRoot)) {
-        if (!websiteMap[folder]) continue;
+    for (const site of sites) {
+        const { name, logPath } = site;
+        if (!fs.existsSync(logPath)) {
+            console.warn(`[IIS Agent] Log path not found for ${name}: ${logPath}`);
+            continue;
+        }
 
-        const siteName = websiteMap[folder];
-        const fullPath = path.join(logRoot, folder);
-        const logFiles = fs.readdirSync(fullPath)
+        const logFiles = fs.readdirSync(logPath)
             .filter(f => f.endsWith('.log'))
             .map(f => ({
                 file: f,
-                time: fs.statSync(path.join(fullPath, f)).mtime.getTime()
+                time: fs.statSync(path.join(logPath, f)).mtime.getTime()
             }))
             .sort((a, b) => b.time - a.time);
 
-        if (!logFiles.length) continue;
+        if (!logFiles.length) {
+            console.warn(`[IIS Agent] No log files found for ${name} in ${logPath}`);
+            continue;
+        }
 
-        const latestLogPath = path.join(fullPath, logFiles[0].file);
-        tailFile(latestLogPath, siteName);
+        const latestLogPath = path.join(logPath, logFiles[0].file);
+        console.log(`[IIS Agent] Tailing latest log for ${name}: ${latestLogPath}`);
+        tailFile(latestLogPath, name);
     }
+}
+
+function checkWebsiteStatesManual() {
+    return new Promise((resolve) => {
+        exec('powershell -Command "Get-Website | Select-Object Name, State | ConvertTo-Json"', (err, stdout) => {
+            if (err || !stdout) return resolve([]);
+            try {
+                const parsed = JSON.parse(stdout.trim());
+                const list = Array.isArray(parsed) ? parsed : [parsed];
+
+                const cleaned = list
+                    .filter(site => site && (site.name || site.Name))
+                    .map(site => ({
+                        name: site.name || site.Name,
+                        state: site.state || site.State
+                    }));
+
+                resolve(cleaned);
+            } catch (e) {
+                console.warn('[IIS Agent] Failed to parse website states:', e.message);
+                resolve([]);
+            }
+        });
+    });
+}
+
+async function monitorSiteStates() {
+    const iisSites = iisConfig.sites || [];
+    const liveStates = await checkWebsiteStatesManual();
+
+    const matchedStates = iisSites.map(cfg => {
+        const match = liveStates.find(l => l.name.toLowerCase() === cfg.name.toLowerCase());
+        return {
+            name: cfg.name,
+            state: match?.state || 'unknown'
+        };
+    });
+
+    for (const site of matchedStates) {
+        const lastState = previousStates[site.name];
+        const shouldSend = !lastState || lastState !== site.state;
+
+        if (shouldSend) {
+            watchlogServerSocket.emit('iis/site-status-update', {
+                name: site.name,
+                oldState: lastState || null,
+                newState: site.state,
+                timestamp: new Date().toISOString()
+            });
+        }
+
+        previousStates[site.name] = site.state;
+    }
+
+    watchlogServerSocket.emit('iis/site-status-snapshot', {
+        sites: matchedStates,
+        timestamp: new Date().toISOString()
+    });
 }
 
 function flushTailBufferForSite(siteName) {
@@ -246,22 +235,6 @@ function flushAllSites() {
         flushTailBufferForSite(site);
     }
 }
-async function sendAllStatesSnapshot() {
-    const sites = await checkWebsiteStates();
-
-    const payload = sites.map(site => ({
-        name: site.name,
-        state: site.state,
-        timestamp: new Date().toISOString()
-    }));
-
-    if (payload.length > 0) {
-        watchlogServerSocket.emit('iis/site-status-snapshot', {
-            sites: payload,
-            timestamp: new Date().toISOString()
-        });
-    }
-}
 
 
 try {
@@ -271,8 +244,6 @@ try {
         setupTailForAllLogs();
         setInterval(flushAllSites, FLUSH_INTERVAL);
         setInterval(monitorSiteStates, STATE_CHECK_INTERVAL);
-        setInterval(sendAllStatesSnapshot, 60 * 1000 * 3); 
-
     }
 } catch (err) {
     console.warn('[IIS Agent] integration.json not found or invalid:', err.message);

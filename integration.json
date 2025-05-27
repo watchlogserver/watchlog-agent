@@ -2,6 +2,12 @@
     {
         "service": "iis",
         "monitor": false,
+        "sites": [
+            {
+                "name": "site1.example.com",
+                "logPath": "C:\\inetpub\\logs\\LogFiles\\W3SVC1"
+            }
+        ],
         "fieldIndexes": {
             "sc-status": 11,
             "cs-method": 3,
@@ -28,8 +34,8 @@
     },
     {
         "monitor": false,
-        "service" : "nginx",
-        "accessLog" : "/var/log/nginx/access.log"
+        "service": "nginx",
+        "accessLog": "/var/log/nginx/access.log"
     },
     {
         "service": "postgresql",
