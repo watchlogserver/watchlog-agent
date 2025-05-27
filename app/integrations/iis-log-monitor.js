@@ -246,6 +246,23 @@ function flushAllSites() {
         flushTailBufferForSite(site);
     }
 }
+async function sendAllStatesSnapshot() {
+    const sites = await checkWebsiteStates();
+
+    const payload = sites.map(site => ({
+        name: site.name,
+        state: site.state,
+        timestamp: new Date().toISOString()
+    }));
+
+    if (payload.length > 0) {
+        watchlogServerSocket.emit('iis/site-status-snapshot', {
+            sites: payload,
+            timestamp: new Date().toISOString()
+        });
+    }
+}
+
 
 try {
     const iisConfigIntegration = integrations.find(item => item.service === 'iis');
@@ -254,6 +271,8 @@ try {
         setupTailForAllLogs();
         setInterval(flushAllSites, FLUSH_INTERVAL);
         setInterval(monitorSiteStates, STATE_CHECK_INTERVAL);
+        setInterval(sendAllStatesSnapshot, 60 * 1000 * 3); 
+
     }
 } catch (err) {
     console.warn('[IIS Agent] integration.json not found or invalid:', err.message);
