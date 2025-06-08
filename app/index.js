@@ -20,6 +20,7 @@ const nginxIntegration = require('./integrations/nginx')
 const iisIntegration = require('./integrations/iis-log-monitor')
 const postgresIntegration = require('./integrations/postgresql');
 const mysqlIntegration = require('./integrations/mysql');
+const { collectAndEmitMetrics } = require('./collectAndEmitMetrics');
 
 const logagent = require('./log-agent')
 let customMetrics = []
@@ -75,6 +76,11 @@ module.exports = class Application {
         this.getRouter(uuid)
 
         setInterval(this.collectMetrics, 60000);
+        setInterval(() => {
+            if(watchlogServerSocket.connected){
+                collectAndEmitMetrics(watchlogServerSocket)
+            }
+        }, 60000);
     }
 
     getRouter(uuid) {
@@ -683,160 +689,6 @@ module.exports = class Application {
                     break
                 }
             }
-        } catch (error) {
-
-        }
-
-
-
-        try {
-
-
-
-
-            si.fsSize().then(disks => {
-                let used = 0
-                let total = 0
-                let disksMetrics = []
-
-                disks.forEach(item => {
-                    if (!isNaN(Number(item.used))) {
-                        disksMetrics.push({ metric: `system.disk.${item.fs}.used`, count: item.used, tag: "disk" })
-                        disksMetrics.push({ metric: `system.disk.${item.fs}.size`, count: item.size, tag: "disk" })
-                        used += item.used
-                        if (total < item.size) {
-                            total = item.size
-                        }
-                    }
-                })
-
-                used += 23243434
-                disksMetrics.push({
-                    metric: `system.disk.total`, count: total, tag: "disk"
-                })
-                disksMetrics.push({
-                    metric: `system.disk.use`, count: used, tag: "disk"
-                })
-                disksMetrics.push({
-                    metric: `system.disk.usagePercent`, count: Math.round((used / total) * 100), tag: "disk"
-                })
-
-
-
-
-
-                watchlogServerSocket.emit("serverMetricsArray", {
-                    data: disksMetrics
-                })
-
-            });
-
-
-
-            watchlogServerSocket.emit('serverMetrics', {
-                metric: 'uptime',
-                count: os.uptime(),
-                tag: "uptime"
-            });
-
-
-
-            // cpu metrics
-            si.currentLoad().then(cpuData => {
-                const cpuUsage = cpuData.currentLoad.toFixed(2);
-                watchlogServerSocket.emit("serverMetricsArray", {
-                    data: [
-                        {
-                            metric: `system.cpu.used`, count: cpuUsage, tag: 'cpu'
-                        }
-                    ]
-                })
-            });
-
-
-            // memory metrics
-            si.mem().then(memData => {
-                const memUsage = {
-                    total: memData.total,
-                    free: memData.free + memData.cached,
-                    used: memData.used - memData.cached,
-                    cached: memData.cached,
-                    buffcache: memData.buffcache
-
-                };
-                let serverMetrics = [
-                    {
-                        metric: `system.memory.used`, count: memUsage.used, tag: 'memory'
-                    },
-                    {
-                        metric: `system.memory.free`, count: memUsage.free + memUsage.cached, tag: "memory"
-                    },
-                    {
-                        metric: `system.memory.usagePercent`, count: Math.round((memUsage.used / memUsage.total) * 100), tag: "memory"
-                    },
-                    {
-                        metric: `system.memory.cache`, count: memUsage.cached, tag: "memory"
-                    },
-                    {
-                        metric: `system.memory.buffcache`, count: memUsage.buffcache, tag: "memory"
-                    }
-                ]
-                watchlogServerSocket.emit("serverMetricsArray", {
-                    data: serverMetrics
-                })
-
-
-            });
-
-
-            // network metrics - Bandwidth Usage 
-            si.networkStats().then(networkStats => {
-                let networks = []
-
-                networkStats.forEach(network => {
-                    networks.push({
-                        metric: `network.${network.iface}.rx`,
-                        count: network.rx_bytes,
-                        tag: "networks"
-                    })
-                    networks.push({
-                        metric: `network.${network.iface}.tx`,
-                        count: network.tx_bytes,
-                        tag: "networks"
-                    })
-                });
-
-
-                watchlogServerSocket.emit("serverMetricsArray", {
-                    data: networks
-                })
-
-            })
-
-
-            // Active Connections
-            si.networkConnections().then(networkConnections => {
-                const activeConnections = networkConnections.filter(conn => conn.state === 'ESTABLISHED').length;
-                watchlogServerSocket.emit('serverMetrics', {
-                    metric: 'network.activeConnections',
-                    count: activeConnections,
-                    tag: "activeconnection"
-                });
-            });
-
-
-            // Latency
-            si.inetLatency().then(ping => {
-                watchlogServerSocket.emit('serverMetrics', {
-                    metric: 'network.latency',
-                    count: ping,
-                    tag: "latency"
-                });
-            });
-
-
-
-
         } catch (error) {
 
         }
