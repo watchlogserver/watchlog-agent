@@ -55,7 +55,7 @@ module.exports = class Application {
         if (!apiKey) {
             return console.log(new Error("Watchlog Server is not found"))
         }
-        if (await this.checkApiKey(uuid, systemOsfo.distro, systemOsfo.release)) {
+        if (await this.checkApiKey(uuid, "docker", "v1")) {
             this.runAgent(uuid)
         } else {
             setTimeout(() => {
@@ -66,7 +66,7 @@ module.exports = class Application {
     }
 
     runAgent(uuid) {
-        app.listen(port, () => console.log(`Watchlog api agent is running on port 3774`))
+        app.listen(port,'0.0.0.0', () => console.log(`Watchlog api agent is running on port 3774`))
         app.use(express.json());
         app.use(express.urlencoded({
             extended: true
@@ -717,7 +717,7 @@ watchlogServerSocket.on('reconnect', async (attemptNumber) => {
             uuid = process.env.UUID
         }
 
-        watchlogServerSocket.emit("setApiKey", { apiKey, host: os.hostname(), ip: getSystemIP(), uuid: uuid, distro: systemOsfo.distro, release: systemOsfo.release, agentVersion : "0.1.1" })
+        watchlogServerSocket.emit("setApiKey", { apiKey, host: os.hostname(), ip: getSystemIP(), uuid: uuid, distro: "docker", release: "v1", agentVersion : "0.1.1" })
     }
 
 });
