@@ -561,15 +561,52 @@ module.exports = class Application {
             }
 
         })
+        app.post("/ai-tracer", async (req, res) => {
+            try {
+                const data = req.body;
+                const spans = Array.isArray(data) ? data : [data];
+
+                const validSpans = spans.filter(span =>
+                    span && span.traceId && span.spanId && span.startTime && span.endTime
+                );
+
+                for (const span of validSpans) {
+                    span.duration = new Date(span.endTime).getTime() - new Date(span.startTime).getTime();
+                    span.status = this.determineStatus(span);
+                }
+
+                if (watchlogServerSocket.connected && validSpans.length > 0) {
+                    watchlogServerSocket.emit("ai-trace", {
+                        spans: validSpans
+                    });
+                }
+
+                res.status(200).send({
+                    status: "ok",
+                    received: validSpans.length,
+                    skipped: spans.length - validSpans.length
+                });
+
+            } catch (err) {
+                console.error("AI tracer error:", err.message);
+                res.status(500).send("Internal error");
+            }
+        });
     }
 
+    determineStatus(span) {
+        if (!span.output || span.output.trim() === "") return "Error";
+        const duration = new Date(span.endTime) - new Date(span.startTime);
+        if (duration > 10000) return "Timeout";
+        return "Success";
+    }
     async checkApiKey(uuid, distro, release) {
         try {
             let response = await axios.get(`${watchlog_server}/checkapikey?apiKey=${apiKey}&uuid=${uuid}`)
             if (response.status == 200) {
                 if (response.data.status == "success") {
 
-                    watchlogServerSocket.emit("setApiKey", { apiKey, host: os.hostname(), ip: getSystemIP(), uuid: uuid, distro: distro, release: release, agentVersion : "0.1.1" })
+                    watchlogServerSocket.emit("setApiKey", { apiKey, host: os.hostname(), ip: getSystemIP(), uuid: uuid, distro: distro, release: release, agentVersion: "0.1.1" })
                     return true
                 } else {
                     if (response.data.message) {
@@ -717,7 +754,7 @@ watchlogServerSocket.on('reconnect', async (attemptNumber) => {
             uuid = process.env.UUID
         }
 
-        watchlogServerSocket.emit("setApiKey", { apiKey, host: os.hostname(), ip: getSystemIP(), uuid: uuid, distro: systemOsfo.distro, release: systemOsfo.release, agentVersion : "0.1.1" })
+        watchlogServerSocket.emit("setApiKey", { apiKey, host: os.hostname(), ip: getSystemIP(), uuid: uuid, distro: systemOsfo.distro, release: systemOsfo.release, agentVersion: "0.1.1" })
     }
 
 });
