@@ -3,7 +3,7 @@ const chokidar = require('chokidar');
 const watchlogServerSocket = require("./socketServer");
 
 let monitorLogs = [];
-const CONFIG_FILE = 'log-watchlist.json';
+const CONFIG_FILE = './config/log-watchlist.json';
 
 console.log(CONFIG_FILE);
 let uniqueNames = new Set();

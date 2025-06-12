@@ -12,14 +12,14 @@ const app = express()
 const exec = require('child_process').exec;
 const path = require('path')
 const configFilePath = path.join(__dirname, './../.env');
-const integrations = require("./../integration.json")
+const integrations = require("./../config/integration.json")
 const dockerIntegration = require('./integrations/docker')
 const mongoIntegration = require('./integrations/mongo')
 const redisIntegration = require('./integrations/redis')
 const nginxIntegration = require('./integrations/nginx')
 const postgresIntegration = require('./integrations/postgresql');
 const mysqlIntegration = require('./integrations/mysql');
-const { collectAndEmitMetrics } = require('./collectAndEmitMetrics');
+const { collectAndEmitSystemMetrics, collectKubernetesMetrics } = require('./watchlog-k8s-metrics');
 
 const logagent = require('./log-agent')
 let customMetrics = []
@@ -75,14 +75,18 @@ module.exports = class Application {
         this.getRouter(uuid)
 
         setInterval(this.collectMetrics, 60000);
-        setInterval(() => {
-            if(watchlogServerSocket.connected){
-                collectAndEmitMetrics(watchlogServerSocket)
-            }
-        }, 60000);
+        // setInterval(() => {
+        //     if(watchlogServerSocket.connected){
+        //         collectAndEmitMetrics(watchlogServerSocket)
+        //     }
+        // }, 60000);
+        setInterval(() => collectAndEmitSystemMetrics(watchlogServerSocket), 10000);
+        setInterval(() => collectKubernetesMetrics(watchlogServerSocket), 10000);
     }
 
     getRouter(uuid) {
+        app.get('/healthz', (req, res) => res.send('OK'));
+        app.get('/readyz', (req, res) => res.send('READY'));
         app.post("/apm", async (req, res) => {
             try {
                 if (req.body.metrics) {

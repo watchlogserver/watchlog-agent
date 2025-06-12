@@ -4,7 +4,7 @@ const fs = require('fs');
 const url = require('url');
 const { exec } = require('child_process');
 const socket = require('./../socketServer');
-const integrations = require('./../../integration.json');
+const integrations = require('./../../config/integration.json');
 
 let logBuffer = [];
 const MAX_BUFFER = 5000;
