@@ -89,8 +89,8 @@ spec:
       dnsPolicy: ClusterFirstWithHostNet
       containers:
         - name: agent
-          image: watchlog-agent:latest
-          imagePullPolicy: IfNotPresent
+          image: watchlog/kubernetes:latest
+          imagePullPolicy: Always
           ports:
             - name: http
               containerPort: 3774

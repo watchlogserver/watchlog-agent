@@ -1,11 +1,12 @@
 const fs = require('fs');
 const chokidar = require('chokidar');
 const watchlogServerSocket = require("./socketServer");
+const path = require('path')
 
 let monitorLogs = [];
-const CONFIG_FILE = './config/log-watchlist.json';
 
-console.log(CONFIG_FILE);
+const configDir = path.join(__dirname, 'config');
+
 let uniqueNames = new Set();
 let logConfig = loadConfig();
 
@@ -21,17 +22,15 @@ const autoPatterns = {
 };
 
 function loadConfig() {
-    if (!fs.existsSync(CONFIG_FILE)) {
-        console.error(`Error: ${CONFIG_FILE} not found!`);
-        process.exit(1);
-    }
+
 
     try {
-        const data = fs.readFileSync(CONFIG_FILE, 'utf8');
-        let config = JSON.parse(data);
-        ensureUniqueNames(config.logs);
-        validatePatterns(config.logs);
-        return config;
+        const data = JSON.parse(
+            fs.readFileSync(path.join(configDir, 'log-watchlist.json'), 'utf-8')
+        );
+        ensureUniqueNames(data.logs);
+        validatePatterns(data.logs);
+        return data;
     } catch (error) {
         console.error("Error parsing JSON config:", error);
         process.exit(1);
@@ -83,7 +82,7 @@ function detectLogLevel(message, service) {
 
     // Extract log level from message
     let detectedLevel = message.match(/\b(INFO|WARNING|ERROR|DEBUG|FATAL|CRITICAL|NOTICE|TRACE|VERBOSE|I|E|W|F|D|C|N)\b/i);
-    
+
     if (detectedLevel) {
         let rawLevel = detectedLevel[1].toUpperCase();
         return levelMappings[rawLevel] || rawLevel; // Convert to mapped level or return as-is
@@ -195,7 +194,7 @@ function startMonitoring() {
                     const lines = buffer.split('\n');
 
                     // Keep only complete lines, store the remainder in buffer
-                    buffer = lines.pop(); 
+                    buffer = lines.pop();
 
                     lines.forEach(line => {
                         if (line.trim() && !recentLogs.has(line)) {

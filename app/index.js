@@ -13,6 +13,17 @@ const exec = require('child_process').exec;
 const path = require('path')
 const configFilePath = path.join(__dirname, './../.env');
 const integrations = require("./../config/integration.json")
+
+const configDir = path.join(__dirname, 'config');
+
+const integrations = JSON.parse(
+  fs.readFileSync(path.join(configDir, 'integration.json'), 'utf-8')
+);
+
+const watchlist = JSON.parse(
+  fs.readFileSync(path.join(configDir, 'log-watchlist.json'), 'utf-8')
+);
+
 const dockerIntegration = require('./integrations/docker')
 const mongoIntegration = require('./integrations/mongo')
 const redisIntegration = require('./integrations/redis')
