@@ -1,3 +1,4 @@
+---
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -6,14 +7,17 @@ metadata:
 data:
   integration.json: |
     [
-      
+        { "service": "mongodb", "monitor": false, "username": "", "password": "" },
+        { "service": "redis", "monitor": false, "host": "127.0.0.1", "port": "6379", "password": "" },
+        { "service": "nginx", "monitor": false, "accessLog": "/var/log/nginx/access.log" },
+        { "service": "postgresql", "monitor": false, "host": "localhost", "port": "5432", "username": "", "password": "", "database": [] },
+        { "service": "mysql", "monitor": false, "host": "localhost", "port": "3306", "username": "root", "password": "", "database": [] }
     ]
   log-watchlist.json: |
     {
-      "logs": [
-        
-      ]
+      "logs": []
     }
+
 ---
 apiVersion: v1
 kind: Service
@@ -29,6 +33,7 @@ spec:
       port: 3774
       targetPort: 3774
   clusterIP: None
+
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -36,6 +41,7 @@ metadata:
   name: watchlog-agent
   namespace: default
 automountServiceAccountToken: true
+
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -54,6 +60,7 @@ rules:
   - apiGroups: ["batch"]
     resources: ["jobs", "cronjobs"]
     verbs: ["get", "list"]
+
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -67,6 +74,7 @@ subjects:
   - kind: ServiceAccount
     name: watchlog-agent
     namespace: default
+
 ---
 apiVersion: apps/v1
 kind: DaemonSet
