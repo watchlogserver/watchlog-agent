@@ -4,8 +4,9 @@ const fs = require('fs');
 const url = require('url');
 const { exec } = require('child_process');
 const socket = require('./../socketServer');
-const integrations = require('./../../config/integration.json');
-
+const path = require('path')
+const configDir = path.join(__dirname, 'config');
+const integrations = require("../../config/integration.json");
 let logBuffer = [];
 const MAX_BUFFER = 5000;
 const FLUSH_INTERVAL = 10000;

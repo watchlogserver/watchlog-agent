@@ -12,18 +12,9 @@ const app = express()
 const exec = require('child_process').exec;
 const path = require('path')
 const configFilePath = path.join(__dirname, './../.env');
-const integrations = require("./../config/integration.json")
 
-const configDir = path.join(__dirname, 'config');
 
-const integrations = JSON.parse(
-  fs.readFileSync(path.join(configDir, 'integration.json'), 'utf-8')
-);
-
-const watchlist = JSON.parse(
-  fs.readFileSync(path.join(configDir, 'log-watchlist.json'), 'utf-8')
-);
-
+const integrations = require("../config/integration.json");
 const dockerIntegration = require('./integrations/docker')
 const mongoIntegration = require('./integrations/mongo')
 const redisIntegration = require('./integrations/redis')
@@ -345,7 +336,6 @@ module.exports = class Application {
                 if (watchlogServerSocket.connected) {
                     let body = req.query
                     body.count = Number(body.count)
-                    console.log(body)
 
 
                     if (customMetrics.length < 1000) {

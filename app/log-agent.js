@@ -5,7 +5,6 @@ const path = require('path')
 
 let monitorLogs = [];
 
-const configDir = path.join(__dirname, 'config');
 
 let uniqueNames = new Set();
 let logConfig = loadConfig();
@@ -25,9 +24,7 @@ function loadConfig() {
 
 
     try {
-        const data = JSON.parse(
-            fs.readFileSync(path.join(configDir, 'log-watchlist.json'), 'utf-8')
-        );
+        const data = require('./../config/log-watchlist.json')
         ensureUniqueNames(data.logs);
         validatePatterns(data.logs);
         return data;
@@ -234,7 +231,7 @@ function startMonitoring() {
 startMonitoring();
 
 // ** Reload Config if `log-watchlist.json` Changes **
-chokidar.watch(CONFIG_FILE, { persistent: true })
+chokidar.watch('./../config/log-watchlist.json', { persistent: true })
     .on('change', () => {
         console.log("🔄 Reloading config...");
         logConfig = loadConfig();

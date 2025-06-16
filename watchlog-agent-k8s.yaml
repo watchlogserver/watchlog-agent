@@ -97,11 +97,12 @@ spec:
       dnsPolicy: ClusterFirstWithHostNet
       containers:
         - name: agent
-          image: watchlog/kubernetes:latest
-          imagePullPolicy: Always
+          image: watchlog/kubernetes:dev1
+          imagePullPolicy: Never
           ports:
             - name: http
               containerPort: 3774
+              hostPort: 3774
           env:
             - name: UUID
               valueFrom:
@@ -110,7 +111,7 @@ spec:
             - name: WATCHLOG_APIKEY
               value: "8ed204e18781f2c99c6e0bf101ce44d8"
             - name: WATCHLOG_SERVER
-              value: "http://192.168.1.12:7896"
+              value: "http://192.168.70.143:7896"
           volumeMounts:
             - name: config-volume
               mountPath: /app/config
