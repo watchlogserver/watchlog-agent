@@ -21,7 +21,7 @@ const redisIntegration = require('./integrations/redis')
 const nginxIntegration = require('./integrations/nginx')
 const postgresIntegration = require('./integrations/postgresql');
 const mysqlIntegration = require('./integrations/mysql');
-const { collectAndEmitSystemMetrics, collectKubernetesMetrics } = require('./watchlog-k8s-metrics');
+const { collectAndEmitSystemMetrics } = require('./watchlog-k8s-metrics');
 
 const logagent = require('./log-agent')
 let customMetrics = []
@@ -82,8 +82,7 @@ module.exports = class Application {
         //         collectAndEmitMetrics(watchlogServerSocket)
         //     }
         // }, 60000);
-        setInterval(() => collectAndEmitSystemMetrics(watchlogServerSocket), 10000);
-        setInterval(() => collectKubernetesMetrics(watchlogServerSocket), 10000);
+        setInterval(() => collectAndEmitSystemMetrics(watchlogServerSocket), 60000);
     }
 
     getRouter(uuid) {
@@ -611,7 +610,7 @@ module.exports = class Application {
             if (response.status == 200) {
                 if (response.data.status == "success") {
 
-                    watchlogServerSocket.emit("setApiKey", { apiKey, host: os.hostname(), ip: getSystemIP(), uuid: uuid, distro: distro, release: release, agentVersion: "0.1.1" })
+                    watchlogServerSocket.emit("setApiKey", { apiKey, host: os.hostname(), ip: getSystemIP(), uuid: uuid, distro: distro, release: release, agentVersion: "0.1.1", agent_type : "k8s" })
                     return true
                 } else {
                     if (response.data.message) {
@@ -759,7 +758,7 @@ watchlogServerSocket.on('reconnect', async (attemptNumber) => {
             uuid = process.env.UUID
         }
 
-        watchlogServerSocket.emit("setApiKey", { apiKey, host: os.hostname(), ip: getSystemIP(), uuid: uuid, distro: systemOsfo.distro, release: systemOsfo.release, agentVersion: "0.1.1" })
+        watchlogServerSocket.emit("setApiKey", { apiKey, host: os.hostname(), ip: getSystemIP(), uuid: uuid, distro: systemOsfo.distro, release: systemOsfo.release, agentVersion: "0.1.1", agent_type : "k8s" })
     }
 
 });
