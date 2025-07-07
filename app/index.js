@@ -33,6 +33,7 @@ module.exports = class Application {
 
         const systemInfo = await si.system();
         const systemOsfo = await si.osInfo();
+        let uuid = "";
 
         if (process.env.UUID) {
             uuid = process.env.UUID;
