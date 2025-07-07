@@ -2,45 +2,43 @@
 const { Tail } = require('tail');
 const fs = require('fs');
 const url = require('url');
-const { exec } = require('child_process');
 const socket = require('./../socketServer');
-const integrations = require('./../../integration.json');
-
+const net = require('net');
 let logBuffer = [];
 const MAX_BUFFER = 5000;
 const FLUSH_INTERVAL = 10000;
 const STATUS_CHECK_INTERVAL = 5000;
-let nginxConfig = integrations.find(i => i.service === 'nginx');
 let previousStatus = null;
+// آیا باید nginx رو مانیتور کنیم؟
+const monitorNginx = process.env.MONITOR_NGINX === 'true';
 
-const logFilePath = nginxConfig?.accessLog || '/var/log/nginx/access.log';
+// مسیر فایل access log
+const logFilePath = process.env.NGINX_ACCESS_LOG || '/var/log/nginx/access.log';
 
 const logRegex = /^(\S+) - \S+ \[([^\]]+)\] "([A-Z]+) ([^ ]+) HTTP\/[^"]+" "([^"]+)" (\d{3}) \d+ "([^"]*)" "([^"]*)" ([\d.]+) ([\d.]+|-) ([\.\-]) (\S+) (\S+)$/;
 
 function normalizeDynamicPath(path) {
     if (!path) return path
-  
+
     return path
-      // UUID استاندارد با dash
-      .replace(/\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b/gi, ':uuid')
-      // ObjectId مونگو (۲۴ کاراکتر هگز)
-      .replace(/\b[0-9a-f]{24}\b/gi, ':objectId')
-      // شناسه‌های ۳۲ کاراکتری هگز (مثلاً UUID بدون dash یا MD5)
-      .replace(/\b[0-9a-f]{32}\b/gi, ':hash')
-      // اعداد
-      .replace(/\b\d+\b/g, ':id')
-      // slugهایی که شامل dash هستند
-      .replace(/\/[a-z0-9]*-[a-z0-9\-]*/gi, '/:slug')
-  }
-  
-  
-  
-  
+        // UUID استاندارد با dash
+        .replace(/\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b/gi, ':uuid')
+        // ObjectId مونگو (۲۴ کاراکتر هگز)
+        .replace(/\b[0-9a-f]{24}\b/gi, ':objectId')
+        // شناسه‌های ۳۲ کاراکتری هگز (مثلاً UUID بدون dash یا MD5)
+        .replace(/\b[0-9a-f]{32}\b/gi, ':hash')
+        // اعداد
+        .replace(/\b\d+\b/g, ':id')
+        // slugهایی که شامل dash هستند
+        .replace(/\/[a-z0-9]*-[a-z0-9\-]*/gi, '/:slug')
+}
+
+
 
 function processLogLine(line) {
     const match = line.match(logRegex);
     if (!match) return;
-  
+
     const method = match[3];
     const rawUrl = match[4];
     const fullUrl = match[5];
@@ -51,39 +49,39 @@ function processLogLine(line) {
     const upstreamTime = match[10] !== '-' ? parseFloat(match[10]) : null;
     const sslProtocol = match[12];
     const sslCipher = match[13];
-  
+
     let origin = 'unknown';
     let path = rawUrl;
-  
+
     try {
-      const parsedUrl = new URL(fullUrl);
-      origin = parsedUrl.hostname;
-      path = parsedUrl.pathname;
+        const parsedUrl = new URL(fullUrl);
+        origin = parsedUrl.hostname;
+        path = parsedUrl.pathname;
     } catch (e) {
-      // fallback
-      origin = 'invalid-url';
-      path = rawUrl.split('?')[0];
+        // fallback
+        origin = 'invalid-url';
+        path = rawUrl.split('?')[0];
     }
     const normalizedPath = normalizeDynamicPath(path);
 
     if (!path) return;
-  
+
     logBuffer.push({
-      method,
-      path : normalizedPath,
-      status,
-      origin,
-      userAgent,
-      requestTime,
-      upstreamTime,
-      sslProtocol,
-      sslCipher,
-      raw: line
+        method,
+        path: normalizedPath,
+        status,
+        origin,
+        userAgent,
+        requestTime,
+        upstreamTime,
+        sslProtocol,
+        sslCipher,
+        raw: line
     });
-  
+
     if (logBuffer.length >= MAX_BUFFER) flushLogBuffer();
-  }
-  
+}
+
 
 
 
@@ -123,33 +121,43 @@ function flushLogBuffer() {
 }
 
 function monitorNginxStatus() {
-    if (process.platform === 'linux') {
-        exec('which systemctl', (err, stdout) => {
-            if (!err && stdout.includes('systemctl')) {
-                exec('systemctl is-active nginx', (err, stdout) => {
-                    const currentStatus = stdout.trim();
-                    if (previousStatus !== currentStatus) {
-                        socket.emit('integrations/nginx.status.update', {
-                            timestamp: new Date().toISOString(),
-                            status: currentStatus,
-                            prev: previousStatus
-                        });
-                        previousStatus = currentStatus;
-                    }
+    // از متغیرهای محیطی بخون یا مقادیر پیش‌فرض
+    const host = process.env.NGINX_HOST || '127.0.0.1';
+    const port = parseInt(process.env.NGINX_PORT || '80', 10);
+    const timeoutMs = parseInt(process.env.NGINX_HEALTHCHECK_TIMEOUT_MS || '2000', 10);
+
+    const socketCheck = new net.Socket();
+    let isActive = false;
+
+    socketCheck
+        .setTimeout(timeoutMs)
+        .once('connect', () => {
+            isActive = true;
+            socketCheck.destroy();
+        })
+        .once('timeout', () => {
+            socketCheck.destroy();
+        })
+        .once('error', () => {
+            // خطا در اتصال => inactive
+        })
+        .once('close', () => {
+            const currentStatus = isActive ? 'active' : 'inactive';
+            if (currentStatus !== previousStatus) {
+                socket.emit('integrations/nginx.status.update', {
+                    timestamp: new Date().toISOString(),
+                    status: currentStatus,
+                    prev: previousStatus
                 });
-            } else {
-                console.log('[NGINX Agent] systemctl not available on this system');
-                previousStatus = null;
+                previousStatus = currentStatus;
             }
-        });
-    } else {
-        console.log('[NGINX Agent] NGINX status check not supported on this OS');
-        previousStatus = null;
-    }
+        })
+        .connect(port, host);
 }
 
 
-if (nginxConfig?.monitor && fs.existsSync(logFilePath)) {
+
+if (monitorNginx && fs.existsSync(logFilePath)) {
     const tail = new Tail(logFilePath);
     tail.on('line', processLogLine);
     tail.on('error', err => console.error('[NGINX Agent] Tail error:', err.message));
