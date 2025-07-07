@@ -9,7 +9,6 @@ var ioServer = require('socket.io-client');
 const watchlogServerSocket = require("./socketServer");
 const express = require('express')
 const app = express()
-const exec = require('child_process').exec;
 const path = require('path')
 const configFilePath = path.join(__dirname, './../.env');
 
@@ -610,7 +609,7 @@ module.exports = class Application {
             if (response.status == 200) {
                 if (response.data.status == "success") {
 
-                    watchlogServerSocket.emit("setApiKey", { apiKey, host: os.hostname(), ip: getSystemIP(), uuid: uuid, distro: distro, release: release, agentVersion: "0.1.1", agent_type : "k8s" })
+                    watchlogServerSocket.emit("setApiKey", { apiKey, host: os.hostname(), ip: getSystemIP(), uuid: uuid, distro: distro, release: release, agentVersion: "0.1.1", agent_type: "k8s" })
                     return true
                 } else {
                     if (response.data.message) {
@@ -632,106 +631,72 @@ module.exports = class Application {
     async collectMetrics() {
 
 
-        try {
-            for (let integrate in integrations) {
-                if (integrations[integrate].service == 'mongodb' && integrations[integrate].monitor == true) {
-                    let username = integrations[integrate].username || ""
-                    let password = integrations[integrate].password || ""
-                    let mongoPort = integrations[integrate].port || "27017"
-                    let mongoHost = integrations[integrate].host || "localhost"
-                    mongoIntegration.getData(mongoHost, mongoPort, username, password, (result, err) => {
-                        if (result) {
-                            watchlogServerSocket.emit("integrations/mongodbservice", {
-                                data: result
-                            })
-                        }
-                    })
-                    break
-                }
-            }
-        } catch (error) {
+        // --- MongoDB ---
+        if (process.env.MONITOR_MONGODB === 'true') {
+            const host = process.env.MONGODB_HOST || 'localhost';
+            const port = process.env.MONGODB_PORT || '27017';
+            const username = process.env.MONGODB_USERNAME || '';
+            const password = process.env.MONGODB_PASSWORD || '';
 
-        }
-        try {
-            for (let integrate of integrations) {
-                if (integrate.service === 'postgresql' && integrate.monitor === true && integrate.database.length > 0) {
-                    let username = integrate.username || "";
-                    let password = integrate.password || "";
-                    let port = integrate.port || "5432";
-                    let host = integrate.host || "localhost";
-                    let databases = Array.isArray(integrate.database) ? integrate.database : [integrate.database];
-
-                    postgresIntegration.getData(host, port, username, password, databases, (result) => {
-                        if (result) {
-                            watchlogServerSocket.emit("integrations/postgresqlservice", {
-                                data: result
-                            });
-                        }
-                    });
+            mongoIntegration.getData(host, port, username, password, (result) => {
+                if (result) {
+                    watchlogServerSocket.emit('integrations/mongodbservice', { data: result });
                 }
-            }
-        } catch (error) {
-            console.error("PostgreSQL Integration Error:", error.message);
+            });
         }
 
-        try {
-            for (let integrate of integrations) {
-                if (integrate.service === 'mysql' && integrate.monitor === true && integrate.database.length > 0) {
-                    let username = integrate.username || "";
-                    let password = integrate.password || "";
-                    let port = integrate.port || "3306";
-                    let host = integrate.host || "localhost";
-                    let databases = Array.isArray(integrate.database) ? integrate.database : [integrate.database];
+        // --- Redis ---
+        if (process.env.MONITOR_REDIS === 'true') {
+            const host = process.env.REDIS_HOST || '127.0.0.1';
+            const port = process.env.REDIS_PORT || '6379';
+            const password = process.env.REDIS_PASSWORD || '';
 
-                    mysqlIntegration.getData(host, port, username, password, databases, (result) => {
-                        if (result) {
-                            watchlogServerSocket.emit("integrations/mysqlservice", {
-                                data: result
-                            });
-                        }
-                    });
+            redisIntegration.getData(host, port, password, (result) => {
+                if (result) {
+                    watchlogServerSocket.emit('integrations/redisservice', { data: result });
                 }
-            }
-        } catch (error) {
-            console.error("MySQL Integration Error:", error.message);
+            });
         }
 
+        // --- PostgreSQL ---
+        if (process.env.MONITOR_POSTGRESQL === 'true' && process.env.POSTGRESQL_DATABASES) {
+            const host = process.env.POSTGRESQL_HOST || 'localhost';
+            const port = process.env.POSTGRESQL_PORT || '5432';
+            const username = process.env.POSTGRESQL_USERNAME || '';
+            const password = process.env.POSTGRESQL_PASSWORD || '';
+            const dbs = process.env.POSTGRESQL_DATABASES.split(',').map(d => d.trim());
 
-        try {
-            for (let integrate in integrations) {
-                if (integrations[integrate].service == 'redis' && integrations[integrate].monitor == true) {
-                    let password = integrations[integrate].password || ""
-                    let redisPort = integrations[integrate].port || 6379
-                    let redisHost = integrations[integrate].host || "127.0.0.1"
-                    redisIntegration.getData(redisHost, redisPort, password, (result, err) => {
-                        if (result) {
-                            watchlogServerSocket.emit("integrations/redisservice", {
-                                data: result
-                            })
-                        }
-                    })
-                    break
+            postgresIntegration.getData(host, port, username, password, dbs, (result) => {
+                if (result) {
+                    watchlogServerSocket.emit('integrations/postgresqlservice', { data: result });
                 }
-            }
-        } catch (error) {
+            });
         }
 
-        try {
-            for (let integrate in integrations) {
-                if (integrations[integrate].service == 'docker' && integrations[integrate].monitor == true) {
-                    dockerIntegration.getData((result, err) => {
-                        if (result) {
-                            watchlogServerSocket.emit("dockerInfo", {
-                                data: result
-                            })
-                        }
-                    })
-                    break
-                }
-            }
-        } catch (error) {
+        // --- MySQL ---
+        if (process.env.MONITOR_MYSQL === 'true' && process.env.MYSQL_DATABASES) {
+            const host = process.env.MYSQL_HOST || 'localhost';
+            const port = process.env.MYSQL_PORT || '3306';
+            const username = process.env.MYSQL_USERNAME || '';
+            const password = process.env.MYSQL_PASSWORD || '';
+            const dbs = process.env.MYSQL_DATABASES.split(',').map(d => d.trim());
 
+            mysqlIntegration.getData(host, port, username, password, dbs, (result) => {
+                if (result) {
+                    watchlogServerSocket.emit('integrations/mysqlservice', { data: result });
+                }
+            });
         }
+
+        // --- Docker ---
+        if (process.env.MONITOR_DOCKER === 'true') {
+            dockerIntegration.getData((result) => {
+                if (result) {
+                    watchlogServerSocket.emit('dockerInfo', { data: result });
+                }
+            });
+        }
+
 
     }
 
@@ -758,7 +723,7 @@ watchlogServerSocket.on('reconnect', async (attemptNumber) => {
             uuid = process.env.UUID
         }
 
-        watchlogServerSocket.emit("setApiKey", { apiKey, host: os.hostname(), ip: getSystemIP(), uuid: uuid, distro: systemOsfo.distro, release: systemOsfo.release, agentVersion: "0.1.1", agent_type : "k8s" })
+        watchlogServerSocket.emit("setApiKey", { apiKey, host: os.hostname(), ip: getSystemIP(), uuid: uuid, distro: systemOsfo.distro, release: systemOsfo.release, agentVersion: "0.1.1", agent_type: "k8s" })
     }
 
 });
