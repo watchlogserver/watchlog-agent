@@ -66,7 +66,7 @@ module.exports = class Application {
     }
 
     runAgent(uuid) {
-        app.listen(port, () => console.log(`Watchlog api agent is running on port 3774`))
+        app.listen(port, '0.0.0.0', () => console.log(`Watchlog api agent is running on port 3774`))
         app.use(express.json());
         app.use(express.urlencoded({
             extended: true
