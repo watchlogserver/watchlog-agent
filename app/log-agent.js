@@ -7,7 +7,7 @@ const CONFIG_FILE = 'log-watchlist.json';
 
 console.log(CONFIG_FILE);
 let uniqueNames = new Set();
-let logConfig = loadConfig();
+let logConfig = loadConfigFromEnv();
 
 const autoPatterns = {
     nginx: /^(\S+) - - \[(.*?)\] "(.*?)" (\d+) (\d+) "(.*?)" "(.*?)"/,
@@ -20,20 +20,23 @@ const autoPatterns = {
     default: /^(.*?)\s+(\w+):\s+(.*)$/,
 };
 
-function loadConfig() {
-    if (!fs.existsSync(CONFIG_FILE)) {
-        console.error(`Error: ${CONFIG_FILE} not found!`);
-        process.exit(1);
+function loadConfigFromEnv() {
+    if (!process.env.LOG_WATCHLIST_JSON) {
+        console.warn("ℹ No log watchlist found in environment. Skipping log monitoring.");
+        return { logs: [] };
     }
 
     try {
-        const data = fs.readFileSync(CONFIG_FILE, 'utf8');
-        let config = JSON.parse(data);
-        ensureUniqueNames(config.logs);
-        validatePatterns(config.logs);
-        return config;
+        const parsed = JSON.parse(process.env.LOG_WATCHLIST_JSON);
+        if (!Array.isArray(parsed)) throw new Error("Invalid JSON structure (expected array)");
+
+        ensureUniqueNames(parsed);
+        validatePatterns(parsed);
+
+        return { logs: parsed };
+
     } catch (error) {
-        console.error("Error parsing JSON config:", error);
+        console.error("❌ Failed to parse LOG_WATCHLIST_JSON:", error.message);
         process.exit(1);
     }
 }
@@ -234,10 +237,3 @@ function startMonitoring() {
 // ** Start Monitoring Logs **
 startMonitoring();
 
-// ** Reload Config if `log-watchlist.json` Changes **
-chokidar.watch(CONFIG_FILE, { persistent: true })
-    .on('change', () => {
-        console.log("🔄 Reloading config...");
-        logConfig = loadConfig();
-        startMonitoring();
-    });
