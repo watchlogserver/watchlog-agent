@@ -1,21 +1,150 @@
-apiVersion: v1
-kind: ConfigMap
+apiVersion: apps/v1
+kind: DaemonSet
 metadata:
-  name: watchlog-config
+  name: watchlog-node-agent
   namespace: default
-data:
-  integration.json: |
-    [
-        { "service": "mongodb", "monitor": false, "username": "", "password": "" },
-        { "service": "redis", "monitor": false, "host": "127.0.0.1", "port": "6379", "password": "" },
-        { "service": "nginx", "monitor": false, "accessLog": "/var/log/nginx/access.log" },
-        { "service": "postgresql", "monitor": false, "host": "localhost", "port": "5432", "username": "", "password": "", "database": [] },
-        { "service": "mysql", "monitor": false, "host": "localhost", "port": "3306", "username": "root", "password": "", "database": [] }
-    ]
-  log-watchlist.json: |
-    {
-      "logs": []
-    }
+  labels:
+    app: watchlog-node-agent
+spec:
+  selector:
+    matchLabels:
+      app: watchlog-node-agent
+  template:
+    metadata:
+      labels:
+        app: watchlog-node-agent
+    spec:
+      serviceAccountName: watchlog-node-agent
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      containers:
+        - name: agent
+          image: watchlog-node-agent:v1
+          imagePullPolicy: Never
+          ports:
+            - name: http
+              containerPort: 3774
+              hostPort: 3774
+          env:
+            - name: UUID
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: MODE
+              value: "node"
+            - name: WATCHLOG_APIKEY
+              value: "<YOUR_WATCHLOG_APIKEY>"
+            - name: WATCHLOG_SERVER
+              value: "<YOUR_WATCHLOG_SERVER>"
+
+            # Redis
+            - name: MONITOR_REDIS
+              value: "false"
+            - name: REDIS_HOST
+              value: "127.0.0.1"
+            - name: REDIS_PORT
+              value: "6379"
+            - name: REDIS_PASSWORD
+              value: ""
+
+            # MongoDB
+            - name: MONITOR_MONGODB
+              value: "false"
+            - name: MONGODB_HOST
+              value: "127.0.0.1"
+            - name: MONGODB_PORT
+              value: "27017"
+            - name: MONGODB_USERNAME
+              value: ""
+            - name: MONGODB_PASSWORD
+              value: ""
+
+            # NGINX
+            - name: MONITOR_NGINX
+              value: "false"
+            - name: NGINX_ACCESS_LOG
+              value: "/var/log/nginx/access.log"
+
+            # MySQL
+            - name: MONITOR_MYSQL
+              value: "false"
+            - name: MYSQL_HOST
+              value: "127.0.0.1"
+            - name: MYSQL_PORT
+              value: "3306"
+            - name: MYSQL_USERNAME
+              value: "root"
+            - name: MYSQL_PASSWORD
+              value: ""
+            - name: MYSQL_DATABASES
+              value: ""
+
+            # PostgreSQL
+            - name: MONITOR_POSTGRESQL
+              value: "false"
+            - name: POSTGRESQL_HOST
+              value: "127.0.0.1"
+            - name: POSTGRESQL_PORT
+              value: "5432"
+            - name: POSTGRESQL_USERNAME
+              value: ""
+            - name: POSTGRESQL_PASSWORD
+              value: ""
+            - name: POSTGRESQL_DATABASES
+              value: ""
+
+            # Custom Log Watchlist
+            - name: LOG_WATCHLIST_JSON
+              value: '[]'
+
+          volumeMounts:
+            - name: host-root
+              mountPath: /host
+              mountPropagation: HostToContainer
+            - name: proc
+              mountPath: /proc
+            - name: sys
+              mountPath: /sys
+            - name: docker-sock
+              mountPath: /var/run/docker.sock
+          securityContext:
+            privileged: true
+            capabilities:
+              add: ["SYS_ADMIN"]
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+            limits:
+              cpu: "1"
+              memory: "1Gi"
+      tolerations:
+        - key: node-role.kubernetes.io/master
+          effect: NoSchedule
+        - key: node-role.kubernetes.io/control-plane
+          effect: NoSchedule
+        - key: node.kubernetes.io/disk-pressure
+          operator: Exists
+          effect: NoSchedule
+        - key: node.kubernetes.io/memory-pressure
+          operator: Exists
+          effect: NoSchedule
+        - key: node.kubernetes.io/network-unavailable
+          operator: Exists
+          effect: NoSchedule
+      volumes:
+        - name: host-root
+          hostPath:
+            path: /
+        - name: proc
+          hostPath:
+            path: /proc
+        - name: sys
+          hostPath:
+            path: /sys
+        - name: docker-sock
+          hostPath:
+            path: /var/run/docker.sock
 ---
 apiVersion: v1
 kind: Service
@@ -60,96 +189,3 @@ subjects:
   - kind: ServiceAccount
     name: watchlog-node-agent
     namespace: default
----
-apiVersion: apps/v1
-kind: DaemonSet
-metadata:
-  name: watchlog-node-agent
-  namespace: default
-  labels:
-    app: watchlog-node-agent
-spec:
-  selector:
-    matchLabels:
-      app: watchlog-node-agent
-  template:
-    metadata:
-      labels:
-        app: watchlog-node-agent
-    spec:
-      serviceAccountName: watchlog-node-agent
-      hostNetwork: true
-      dnsPolicy: ClusterFirstWithHostNet
-      containers:
-        - name: agent
-          image: watchlog-node-agent:v1
-          imagePullPolicy: Never
-          ports:
-            - name: http
-              containerPort: 3774
-              hostPort: 3774
-          env:
-            - name: UUID
-              valueFrom:
-                fieldRef:
-                  fieldPath: spec.nodeName
-            - name: MODE
-              value: "node"
-            - name: WATCHLOG_APIKEY
-              value: "<YOUR_WATCHLOG_APIKEY>"
-            - name: WATCHLOG_SERVER
-              value: "<YOUR_WATCHLOG_SERVER>"
-          volumeMounts:
-            - name: config-volume
-              mountPath: /app/config
-              readOnly: true
-            - name: host-root
-              mountPath: /host
-              mountPropagation: HostToContainer
-            - name: proc
-              mountPath: /proc
-            - name: sys
-              mountPath: /sys
-            - name: docker-sock
-              mountPath: /var/run/docker.sock
-          securityContext:
-            privileged: true
-            capabilities:
-              add: ["SYS_ADMIN"]
-          resources:
-            requests:
-              cpu: "200m"
-              memory: "256Mi"
-            limits:
-              cpu: "1"
-              memory: "1Gi"
-      tolerations:
-        - key: node-role.kubernetes.io/master
-          effect: NoSchedule
-        - key: node-role.kubernetes.io/control-plane
-          effect: NoSchedule
-        - key: node.kubernetes.io/disk-pressure
-          operator: Exists
-          effect: NoSchedule
-        - key: node.kubernetes.io/memory-pressure
-          operator: Exists
-          effect: NoSchedule
-        - key: node.kubernetes.io/network-unavailable
-          operator: Exists
-          effect: NoSchedule
-      volumes:
-        - name: config-volume
-          configMap:
-            name: watchlog-config
-        - name: host-root
-          hostPath:
-            path: /
-        - name: proc
-          hostPath:
-            path: /proc
-        - name: sys
-          hostPath:
-            path: /sys
-        - name: docker-sock
-          hostPath:
-            path: /var/run/docker.sock
