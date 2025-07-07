@@ -96,11 +96,9 @@ spec:
             - name: MODE
               value: "node"
             - name: WATCHLOG_APIKEY
-              value: "8ed204e18781f2c99c6e0bf101ce44d8"
+              value: "<YOUR_WATCHLOG_APIKEY>"
             - name: WATCHLOG_SERVER
-              value: "http://192.168.1.10:7896"
-            - name: WATCHLOG_CLUSTER_NAME
-              value: "default-cluster"
+              value: "<YOUR_WATCHLOG_SERVER>"
           volumeMounts:
             - name: config-volume
               mountPath: /app/config
