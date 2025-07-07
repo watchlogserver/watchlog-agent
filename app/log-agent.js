@@ -1,13 +1,11 @@
 const fs = require('fs');
 const chokidar = require('chokidar');
 const watchlogServerSocket = require("./socketServer");
-const path = require('path')
 
 let monitorLogs = [];
 
-
 let uniqueNames = new Set();
-let logConfig = loadConfig();
+let logConfig = loadConfigFromEnv();
 
 const autoPatterns = {
     nginx: /^(\S+) - - \[(.*?)\] "(.*?)" (\d+) (\d+) "(.*?)" "(.*?)"/,
@@ -20,16 +18,23 @@ const autoPatterns = {
     default: /^(.*?)\s+(\w+):\s+(.*)$/,
 };
 
-function loadConfig() {
-
+function loadConfigFromEnv() {
+    if (!process.env.LOG_WATCHLIST_JSON) {
+        console.warn("ℹ No log watchlist found in environment. Skipping log monitoring.");
+        return { logs: [] };
+    }
 
     try {
-        const data = require('./../config/log-watchlist.json')
-        ensureUniqueNames(data.logs);
-        validatePatterns(data.logs);
-        return data;
+        const parsed = JSON.parse(process.env.LOG_WATCHLIST_JSON);
+        if (!Array.isArray(parsed)) throw new Error("Invalid JSON structure (expected array)");
+
+        ensureUniqueNames(parsed);
+        validatePatterns(parsed);
+
+        return { logs: parsed };
+
     } catch (error) {
-        console.error("Error parsing JSON config:", error);
+        console.error("❌ Failed to parse LOG_WATCHLIST_JSON:", error.message);
         process.exit(1);
     }
 }
@@ -79,7 +84,7 @@ function detectLogLevel(message, service) {
 
     // Extract log level from message
     let detectedLevel = message.match(/\b(INFO|WARNING|ERROR|DEBUG|FATAL|CRITICAL|NOTICE|TRACE|VERBOSE|I|E|W|F|D|C|N)\b/i);
-
+    
     if (detectedLevel) {
         let rawLevel = detectedLevel[1].toUpperCase();
         return levelMappings[rawLevel] || rawLevel; // Convert to mapped level or return as-is
@@ -191,7 +196,7 @@ function startMonitoring() {
                     const lines = buffer.split('\n');
 
                     // Keep only complete lines, store the remainder in buffer
-                    buffer = lines.pop();
+                    buffer = lines.pop(); 
 
                     lines.forEach(line => {
                         if (line.trim() && !recentLogs.has(line)) {
@@ -230,10 +235,3 @@ function startMonitoring() {
 // ** Start Monitoring Logs **
 startMonitoring();
 
-// ** Reload Config if `log-watchlist.json` Changes **
-chokidar.watch('./../config/log-watchlist.json', { persistent: true })
-    .on('change', () => {
-        console.log("🔄 Reloading config...");
-        logConfig = loadConfig();
-        startMonitoring();
-    });
