@@ -18,6 +18,7 @@ const nginxIntegration = require('./integrations/nginx')
 const postgresIntegration = require('./integrations/postgresql');
 const mysqlIntegration = require('./integrations/mysql');
 const { collectAndEmitMetrics } = require('./collectAndEmitMetrics');
+const uuidFilePath = path.join(__dirname, 'config', 'uuid.txt'); // یا هر مسیر مطمئن دیگر
 
 const logagent = require('./log-agent')
 let customMetrics = []
@@ -32,22 +33,24 @@ module.exports = class Application {
 
         const systemInfo = await si.system();
         const systemOsfo = await si.osInfo();
-        let uuid = ""
-        if (!process.env.UUID) {
-            if (systemOsfo.serial && systemOsfo.serial.length > 0) {
-                uuid = systemOsfo.serial
-            } else if (systemInfo.uuid && systemInfo.uuid.length > 0) {
-                uuid = systemInfo.uuid
-            } else {
-                uuid = systemOsfo.hostname
-            }
-            fs.appendFileSync(configFilePath, `\nUUID=${uuid}`, 'utf8');
 
-
-        } else {
-            uuid = process.env.UUID
+        if (process.env.UUID) {
+            uuid = process.env.UUID;
         }
 
+        else if (fs.existsSync(uuidFilePath)) {
+            uuid = fs.readFileSync(uuidFilePath, 'utf8').trim();
+        }
+        else {
+            if (systemOsfo.serial && systemOsfo.serial.length > 0) {
+                uuid = systemOsfo.serial;
+            } else if (systemInfo.uuid && systemInfo.uuid.length > 0) {
+                uuid = systemInfo.uuid;
+            } else {
+                uuid = systemOsfo.hostname;
+            }
+            fs.writeFileSync(uuidFilePath, uuid, 'utf8');
+        }
 
 
         if (!apiKey) {
@@ -665,19 +668,22 @@ watchlogServerSocket.on('reconnect', async (attemptNumber) => {
         const systemInfo = await si.system();
 
         let uuid = ""
-        if (!process.env.UUID) {
+        if (process.env.UUID) {
+            uuid = process.env.UUID;
+        }
+
+        else if (fs.existsSync(uuidFilePath)) {
+            uuid = fs.readFileSync(uuidFilePath, 'utf8').trim();
+        }
+        else {
             if (systemOsfo.serial && systemOsfo.serial.length > 0) {
-                uuid = systemOsfo.serial
+                uuid = systemOsfo.serial;
             } else if (systemInfo.uuid && systemInfo.uuid.length > 0) {
-                uuid = systemInfo.uuid
+                uuid = systemInfo.uuid;
             } else {
-                uuid = systemOsfo.hostname
+                uuid = systemOsfo.hostname;
             }
-            // fs.appendFileSync(configFilePath, `\nUUID=${uuid}`, 'utf8');
-
-
-        } else {
-            uuid = process.env.UUID
+            fs.writeFileSync(uuidFilePath, uuid, 'utf8');
         }
 
         watchlogServerSocket.emit("setApiKey", { apiKey, host: os.hostname(), ip: getSystemIP(), uuid: uuid, distro: "docker", release: "v1", agentVersion: "0.1.1" })
