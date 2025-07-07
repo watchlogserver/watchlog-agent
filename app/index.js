@@ -11,7 +11,6 @@ const express = require('express')
 const app = express()
 const path = require('path')
 const configFilePath = path.join(__dirname, './../.env');
-const integrations = require("./../integration.json")
 const dockerIntegration = require('./integrations/docker')
 const mongoIntegration = require('./integrations/mongo')
 const redisIntegration = require('./integrations/redis')
