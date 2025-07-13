@@ -3,7 +3,7 @@ const path = require('path');
 const readline = require('readline');
 const { exec } = require('child_process');
 const integrations = require("./../../integration.json");
-const watchlogServerSocket = require("../socketServer");
+const {emitWhenConnected} = require('./../socketServer');
 
 const tailBuffers = {};
 const statusIndexes = {};
@@ -169,7 +169,7 @@ async function monitorSiteStates() {
         const shouldSend = !lastState || lastState !== site.state;
 
         if (shouldSend) {
-            watchlogServerSocket.emit('iis/site-status-update', {
+            emitWhenConnected('iis/site-status-update', {
                 name: site.name,
                 oldState: lastState || null,
                 newState: site.state,
@@ -180,7 +180,7 @@ async function monitorSiteStates() {
         previousStates[site.name] = site.state;
     }
 
-    watchlogServerSocket.emit('iis/site-status-snapshot', {
+    emitWhenConnected('iis/site-status-snapshot', {
         sites: matchedStates,
         timestamp: new Date().toISOString()
     });
@@ -224,8 +224,8 @@ function flushTailBufferForSite(siteName) {
         avgResponseTimeMs: total ? Math.round(totalDuration / total) : 0
     });
 
-    watchlogServerSocket.emit('integrations/iis.access.influx', influxPayload);
-    watchlogServerSocket.emit('integrations/iis.access.elastic', elasticPayload);
+    emitWhenConnected('integrations/iis.access.influx', influxPayload);
+    emitWhenConnected('integrations/iis.access.elastic', elasticPayload);
 
     tailBuffers[siteName] = [];
 }
