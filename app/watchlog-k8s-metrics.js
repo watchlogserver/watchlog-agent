@@ -1,11 +1,9 @@
 const si = require('systeminformation');
 const os = require('os');
-const fs = require('fs');
-const axios = require('axios');
-const https = require('https');
+const { emitWhenConnected } = require("./socketServer");
 
 // Collect system metrics from the host
-async function collectAndEmitSystemMetrics(watchlogServerSocket) {
+async function collectAndEmitSystemMetrics() {
   try {
     const [
       disks,
@@ -79,7 +77,7 @@ async function collectAndEmitSystemMetrics(watchlogServerSocket) {
     ];
 
     console.log(`📊 Sending system metrics: ${allMetrics.length} entries`);
-    watchlogServerSocket.emit('serverMetricsArray', { data: allMetrics });
+    emitWhenConnected('serverMetricsArray', { data: allMetrics });
   } catch (err) {
     console.error('❌ Error collecting system metrics:', err);
   }

@@ -1,6 +1,6 @@
 const fs = require('fs');
 const chokidar = require('chokidar');
-const watchlogServerSocket = require("./socketServer");
+const { emitWhenConnected } = require("./socketServer");
 
 let monitorLogs = [];
 
@@ -159,7 +159,7 @@ function processLogLine(log, config) {
         logData = { ...logData, ...parseAutoLogFormat(log, config.service) };
     }
 
-    watchlogServerSocket.emit("logs/watchlist", logData);
+    emitWhenConnected("logs/watchlist", logData);
 }
 
 
@@ -221,7 +221,7 @@ function startMonitoring() {
     // Send monitored logs to the watchlog server after startup
     setTimeout(() => {
         if (monitorLogs.length > 0 && process.env.WATCHLOG_APIKEY && process.env.UUID) {
-            watchlogServerSocket.emit("watchlist/listfile", {
+            emitWhenConnected("watchlist/listfile", {
                 monitorLogs,
                 apiKey: process.env.WATCHLOG_APIKEY,
                 uuid: process.env.UUID

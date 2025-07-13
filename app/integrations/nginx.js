@@ -2,7 +2,7 @@
 const { Tail } = require('tail');
 const fs = require('fs');
 const url = require('url');
-const socket = require('./../socketServer');
+const {emitWhenConnected} = require('./../socketServer');
 const net = require('net');
 let logBuffer = [];
 const MAX_BUFFER = 5000;
@@ -115,8 +115,8 @@ function flushLogBuffer() {
         raw: log.raw
     }));
 
-    socket.emit('integrations/nginx.access.influx', influxPayload);
-    socket.emit('integrations/nginx.access.elastic', elasticPayload);
+    emitWhenConnected('integrations/nginx.access.influx', influxPayload);
+    emitWhenConnected('integrations/nginx.access.elastic', elasticPayload);
     logBuffer = [];
 }
 
@@ -144,7 +144,7 @@ function monitorNginxStatus() {
         .once('close', () => {
             const currentStatus = isActive ? 'active' : 'inactive';
             if (currentStatus !== previousStatus) {
-                socket.emit('integrations/nginx.status.update', {
+                emitWhenConnected('integrations/nginx.status.update', {
                     timestamp: new Date().toISOString(),
                     status: currentStatus,
                     prev: previousStatus
