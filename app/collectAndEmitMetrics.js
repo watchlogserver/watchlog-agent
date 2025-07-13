@@ -1,8 +1,9 @@
 const si = require('systeminformation');
 const os = require('os');
+const { emitWhenConnected } = require('./socketServer');
 
 // function to collect all metrics and emit as one payload
-async function collectAndEmitMetrics(watchlogServerSocket) {
+async function collectAndEmitMetrics() {
   try {
     // Parallel metric collection
     const [
@@ -86,13 +87,11 @@ async function collectAndEmitMetrics(watchlogServerSocket) {
     ];
 
     // Emit single payload
-    watchlogServerSocket.emit('serverMetricsArray', { data: allMetrics });
+    emitWhenConnected('serverMetricsArray', { data: allMetrics });
   } catch (err) {
     console.error('Error collecting metrics:', err);
   }
 }
 
-// Usage example, assuming watchlogServerSocket is defined:
-// setInterval(() => collectAndEmitMetrics(watchlogServerSocket), 5000);
 
 module.exports = { collectAndEmitMetrics };

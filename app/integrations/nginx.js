@@ -3,7 +3,7 @@ const { Tail } = require('tail');
 const fs = require('fs');
 const url = require('url');
 const { exec } = require('child_process');
-const socket = require('./../socketServer');
+const {emitWhenConnected} = require('./../socketServer');
 const integrations = require('./../../integration.json');
 
 let logBuffer = [];
@@ -117,8 +117,8 @@ function flushLogBuffer() {
         raw: log.raw
     }));
 
-    socket.emit('integrations/nginx.access.influx', influxPayload);
-    socket.emit('integrations/nginx.access.elastic', elasticPayload);
+    emitWhenConnected('integrations/nginx.access.influx', influxPayload);
+    emitWhenConnected('integrations/nginx.access.elastic', elasticPayload);
     logBuffer = [];
 }
 
@@ -129,7 +129,7 @@ function monitorNginxStatus() {
                 exec('systemctl is-active nginx', (err, stdout) => {
                     const currentStatus = stdout.trim();
                     if (previousStatus !== currentStatus) {
-                        socket.emit('integrations/nginx.status.update', {
+                        socket('integrations/nginx.status.update', {
                             timestamp: new Date().toISOString(),
                             status: currentStatus,
                             prev: previousStatus
