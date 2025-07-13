@@ -1,12 +1,6 @@
-const si = require('systeminformation');
-const os = require('os')
-const fs = require('fs')
-const axios = require('axios');
 const port = 3774
-const watchlog_server = process.env.WATCHLOG_SERVER
-const apiKey = process.env.WATCHLOG_APIKEY
-var ioServer = require('socket.io-client');
-const watchlogServerSocket = require("./socketServer");
+const { emitWhenConnected } = require('./socketServer');
+
 const express = require('express')
 const app = express()
 const exec = require('child_process').exec;
@@ -29,70 +23,34 @@ module.exports = class Application {
     constructor() {
         this.startApp()
     }
-
-
     async startApp() {
-
-        const systemInfo = await si.system();
-        const systemOsfo = await si.osInfo();
-        let uuid = ""
-        if (!process.env.UUID) {
-            if (systemOsfo.serial && systemOsfo.serial.length > 0) {
-                uuid = systemOsfo.serial
-            } else if (systemInfo.uuid && systemInfo.uuid.length > 0) {
-                uuid = systemInfo.uuid
-            } else {
-                uuid = systemOsfo.hostname
-            }
-            fs.appendFileSync(configFilePath, `\nUUID=${uuid}`, 'utf8');
-
-
-        } else {
-            uuid = process.env.UUID
-        }
-
-
-
-        if (!apiKey) {
-            return console.log(new Error("Watchlog Server is not found"))
-        }
-        if (await this.checkApiKey(uuid, systemOsfo.distro, systemOsfo.release)) {
-            this.runAgent(uuid)
-        } else {
-            setTimeout(() => {
-                this.startApp()
-            }, 10000)
-        }
-        // send axios request for check api
+        this.runAgent()
     }
 
-    runAgent(uuid) {
+    runAgent() {
         app.listen(port, () => console.log(`Watchlog api agent is running on port 3774`))
         app.use(express.json());
         app.use(express.urlencoded({
             extended: true
         }));
 
-        this.getRouter(uuid)
+        this.getRouter()
 
         setInterval(this.collectMetrics, 60000);
         setInterval(() => {
-            if(watchlogServerSocket.connected){
-                collectAndEmitMetrics(watchlogServerSocket)
-            }
+            collectAndEmitMetrics()
         }, 60000);
     }
 
-    getRouter(uuid) {
+    getRouter() {
         app.post("/apm", async (req, res) => {
             try {
                 if (req.body.metrics) {
-                    if (watchlogServerSocket.connected) {
-                        watchlogServerSocket.emit("APM", {
-                            data: req.body.metrics,
-                            platformName: req.body.platformName ? req.body.platformName : "express"
-                        })
-                    }
+                    emitWhenConnected("APM", {
+                        data: req.body.metrics,
+                        platformName: req.body.platformName ? req.body.platformName : "express"
+                    })
+
                 }
             } catch (error) {
             }
@@ -101,7 +59,6 @@ module.exports = class Application {
             res.end()
 
             try {
-                if (watchlogServerSocket.connected) {
                     let body = req.query
                     if (!body.count && body.value) {
                         body.count = body.value
@@ -306,7 +263,6 @@ module.exports = class Application {
                                 break;
                             case 'log':
                                 if (body.service && body.message) {
-                                    // watchlogServerSocket.emit('log', { ...body, type: 1 })
                                 }
                                 break;
                             default:
@@ -315,7 +271,7 @@ module.exports = class Application {
                         }
 
                     }
-                }
+                
             } catch (error) {
                 res.end()
 
@@ -328,7 +284,6 @@ module.exports = class Application {
 
             try {
 
-                if (watchlogServerSocket.connected) {
                     let body = req.query
                     body.count = Number(body.count)
                     console.log(body)
@@ -531,7 +486,6 @@ module.exports = class Application {
                                 break;
                             case 'log':
                                 if (body.service && body.message) {
-                                    // watchlogServerSocket.emit('log', { ...body, type: 1 })
                                 }
                                 break;
                             default:
@@ -540,7 +494,7 @@ module.exports = class Application {
                         }
 
                     }
-                }
+                
             } catch (error) {
 
                 console.log(error.message)
@@ -551,40 +505,54 @@ module.exports = class Application {
 
             try {
                 if (req.body.username && req.body.apps) {
-                    if (watchlogServerSocket.connected) {
-                        watchlogServerSocket.emit("integrations/pm2List", {
-                            data: req.body
-                        })
-                    }
+                    emitWhenConnected("integrations/pm2List", {
+                        data: req.body
+                    })
+
                 }
             } catch (error) {
 
             }
 
         })
+        app.post("/ai-tracer", async (req, res) => {
+            try {
+                const data = req.body;
+                const spans = Array.isArray(data) ? data : [data];
+
+                const validSpans = spans.filter(span =>
+                    span && span.traceId && span.spanId && span.startTime && span.endTime
+                );
+
+                for (const span of validSpans) {
+                    span.duration = new Date(span.endTime).getTime() - new Date(span.startTime).getTime();
+                    span.status = this.determineStatus(span);
+                }
+
+                if (validSpans.length > 0) {
+                    emitWhenConnected("ai-trace", {
+                        spans: validSpans
+                    });
+                }
+
+                res.status(200).send({
+                    status: "ok",
+                    received: validSpans.length,
+                    skipped: spans.length - validSpans.length
+                });
+
+            } catch (err) {
+                console.error("AI tracer error:", err.message);
+                res.status(500).send("Internal error");
+            }
+        });
     }
 
-    async checkApiKey(uuid, distro, release) {
-        try {
-            let response = await axios.get(`${watchlog_server}/checkapikey?apiKey=${apiKey}&uuid=${uuid}`)
-            if (response.status == 200) {
-                if (response.data.status == "success") {
-
-                    watchlogServerSocket.emit("setApiKey", { apiKey, host: os.hostname(), ip: getSystemIP(), uuid: uuid, distro: distro, release: release, agentVersion : "0.1.1" })
-                    return true
-                } else {
-                    if (response.data.message) {
-                        console.log(response.data.message)
-                    }
-                    return false
-                }
-            } else {
-                return false
-            }
-        } catch (error) {
-            console.log(error.message)
-            return false
-        }
+    determineStatus(span) {
+        if (!span.output || span.output.trim() === "") return "Error";
+        const duration = new Date(span.endTime) - new Date(span.startTime);
+        if (duration > 10000) return "Timeout";
+        return "Success";
     }
 
 
@@ -601,7 +569,7 @@ module.exports = class Application {
                     let mongoHost = integrations[integrate].host || "localhost"
                     mongoIntegration.getData(mongoHost, mongoPort, username, password, (result, err) => {
                         if (result) {
-                            watchlogServerSocket.emit("integrations/mongodbservice", {
+                            emitWhenConnected("integrations/mongodbservice", {
                                 data: result
                             })
                         }
@@ -623,7 +591,7 @@ module.exports = class Application {
 
                     postgresIntegration.getData(host, port, username, password, databases, (result) => {
                         if (result) {
-                            watchlogServerSocket.emit("integrations/postgresqlservice", {
+                            emitWhenConnected("integrations/postgresqlservice", {
                                 data: result
                             });
                         }
@@ -645,7 +613,7 @@ module.exports = class Application {
 
                     mysqlIntegration.getData(host, port, username, password, databases, (result) => {
                         if (result) {
-                            watchlogServerSocket.emit("integrations/mysqlservice", {
+                            emitWhenConnected("integrations/mysqlservice", {
                                 data: result
                             });
                         }
@@ -665,7 +633,7 @@ module.exports = class Application {
                     let redisHost = integrations[integrate].host || "127.0.0.1"
                     redisIntegration.getData(redisHost, redisPort, password, (result, err) => {
                         if (result) {
-                            watchlogServerSocket.emit("integrations/redisservice", {
+                            emitWhenConnected("integrations/redisservice", {
                                 data: result
                             })
                         }
@@ -681,7 +649,7 @@ module.exports = class Application {
                 if (integrations[integrate].service == 'docker' && integrations[integrate].monitor == true) {
                     dockerIntegration.getData((result, err) => {
                         if (result) {
-                            watchlogServerSocket.emit("dockerInfo", {
+                            emitWhenConnected("dockerInfo", {
                                 data: result
                             })
                         }
@@ -697,74 +665,12 @@ module.exports = class Application {
 
 }
 
-watchlogServerSocket.on('reconnect', async (attemptNumber) => {
-    if (apiKey) {
-        const systemOsfo = await si.osInfo();
-        const systemInfo = await si.system();
-
-        let uuid = ""
-        if (!process.env.UUID) {
-            if (systemOsfo.serial && systemOsfo.serial.length > 0) {
-                uuid = systemOsfo.serial
-            } else if (systemInfo.uuid && systemInfo.uuid.length > 0) {
-                uuid = systemInfo.uuid
-            } else {
-                uuid = systemOsfo.hostname
-            }
-            // fs.appendFileSync(configFilePath, `\nUUID=${uuid}`, 'utf8');
-
-
-        } else {
-            uuid = process.env.UUID
-        }
-
-        watchlogServerSocket.emit("setApiKey", { apiKey, host: os.hostname(), ip: getSystemIP(), uuid: uuid, distro: systemOsfo.distro, release: systemOsfo.release, agentVersion : "0.1.1" })
-    }
-
-});
-
-
-
-function getSystemIP() {
-    const networkInterfaces = os.networkInterfaces();
-    for (let interfaceName in networkInterfaces) {
-        const interfaces = networkInterfaces[interfaceName];
-
-        for (let iface of interfaces) {
-            // Check if it's an IPv4 address and not internal (i.e., not a localhost address)
-            if (iface.family === 'IPv4' && !iface.internal && !isPrivateIP(iface.address)) {
-                return iface.address;
-            }
-        }
-    }
-
-    return null; // No valid external IP found
-}
-
-
-
-// Function to check if an IP is private
-function isPrivateIP(ip) {
-    // Convert IP to an integer for easier comparison
-    const parts = ip.split('.').map(Number);
-    const ipNum = (parts[0] << 24) + (parts[1] << 16) + (parts[2] << 8) + parts[3];
-
-    // Check against private IP ranges
-    return (
-        (ipNum >= (10 << 24) && ipNum <= ((10 << 24) + 0xFFFFFF)) ||            // 10.0.0.0 - 10.255.255.255
-        (ipNum >= (172 << 24 | 16 << 16) && ipNum <= (172 << 24 | 31 << 16 | 0xFFFF)) || // 172.16.0.0 - 172.31.255.255
-        (ipNum >= (192 << 24 | 168 << 16) && ipNum <= (192 << 24 | 168 << 16 | 0xFFFF)) || // 192.168.0.0 - 192.168.255.255
-        (ipNum >= (127 << 24) && ipNum <= (127 << 24 | 0xFFFFFF))               // 127.0.0.0 - 127.255.255.255 (loopback)
-    );
-}
-
-
 
 setInterval(() => {
 
     try {
 
-        watchlogServerSocket.emit('customMetrics', customMetrics)
+        emitWhenConnected('customMetrics', customMetrics)
         customMetrics = []
 
     } catch (error) {
