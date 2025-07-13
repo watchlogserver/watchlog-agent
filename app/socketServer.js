@@ -7,7 +7,7 @@ const path = require('path');
 
 const watchlog_server = process.env.WATCHLOG_SERVER;
 const apiKey = process.env.WATCHLOG_APIKEY;
-const configFilePath = path.resolve(process.cwd(), 'watchlog.env');
+const uuidFilePath = path.join(__dirname, 'config', 'uuid.txt'); // یا هر مسیر مطمئن دیگر
 
 // Helpers
 function isPrivateIP(ip) {
@@ -47,10 +47,16 @@ const watchlogServerSocket = ioServer(watchlog_server, {
         const systemInfo = await si.system();
         const systemOsfo = await si.osInfo();
 
-        let uuid;
+        let uuid = "";
+
         if (process.env.UUID) {
             uuid = process.env.UUID;
-        } else {
+        }
+
+        else if (fs.existsSync(uuidFilePath)) {
+            uuid = fs.readFileSync(uuidFilePath, 'utf8').trim();
+        }
+        else {
             if (systemOsfo.serial && systemOsfo.serial.length > 0) {
                 uuid = systemOsfo.serial;
             } else if (systemInfo.uuid && systemInfo.uuid.length > 0) {
@@ -58,7 +64,7 @@ const watchlogServerSocket = ioServer(watchlog_server, {
             } else {
                 uuid = systemOsfo.hostname;
             }
-            fs.appendFileSync(configFilePath, '\nUUID=' + uuid, 'utf8');
+            fs.writeFileSync(uuidFilePath, uuid, 'utf8');
         }
 
         watchlogServerSocket.auth = {
