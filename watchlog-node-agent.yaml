@@ -62,9 +62,9 @@ spec:
             - name: MODE
               value: "node"
             - name: WATCHLOG_APIKEY
-              value: "<YOUR_WATCHLOG_APIKEY>"
+              value: "8ed204e18781f2c99c6e0bf101ce44d8"
             - name: WATCHLOG_SERVER
-              value: "<YOUR_WATCHLOG_SERVER>"
+              value: "http://192.168.1.15:7896"
 
             # Redis
             - name: MONITOR_REDIS

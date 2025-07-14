@@ -22,18 +22,18 @@ module.exports = class Application {
 
 
     async startApp() {
-        this.runAgent(uuid)
+        this.runAgent()
         // send axios request for check api
     }
 
-    runAgent(uuid) {
+    runAgent() {
         app.listen(port, '0.0.0.0', () => console.log(`Watchlog api agent is running on port 3774`))
         app.use(express.json());
         app.use(express.urlencoded({
             extended: true
         }));
 
-        this.getRouter(uuid)
+        this.getRouter()
 
         setInterval(this.collectMetrics, 60000);
         // setInterval(() => {
@@ -44,7 +44,7 @@ module.exports = class Application {
         setInterval(() => collectAndEmitSystemMetrics(), 60000);
     }
 
-    getRouter(uuid) {
+    getRouter() {
         app.get('/healthz', (req, res) => res.send('OK'));
         app.get('/readyz', (req, res) => res.send('READY'));
         app.post("/apm", async (req, res) => {
@@ -63,7 +63,6 @@ module.exports = class Application {
             res.end()
 
             try {
-                if (watchlogServerSocket.connected) {
                     let body = req.query
                     if (!body.count && body.value) {
                         body.count = body.value
@@ -268,7 +267,6 @@ module.exports = class Application {
                                 break;
                             case 'log':
                                 if (body.service && body.message) {
-                                    // watchlogServerSocket.emit('log', { ...body, type: 1 })
                                 }
                                 break;
                             default:
@@ -277,7 +275,7 @@ module.exports = class Application {
                         }
 
                     }
-                }
+                
             } catch (error) {
                 res.end()
 
@@ -290,7 +288,6 @@ module.exports = class Application {
 
             try {
 
-                if (watchlogServerSocket.connected) {
                     let body = req.query
                     body.count = Number(body.count)
 
@@ -492,7 +489,6 @@ module.exports = class Application {
                                 break;
                             case 'log':
                                 if (body.service && body.message) {
-                                    // watchlogServerSocket.emit('log', { ...body, type: 1 })
                                 }
                                 break;
                             default:
@@ -501,7 +497,7 @@ module.exports = class Application {
                         }
 
                     }
-                }
+                
             } catch (error) {
 
                 console.log(error.message)
