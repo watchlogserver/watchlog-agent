@@ -129,7 +129,7 @@ function monitorNginxStatus() {
                 exec('systemctl is-active nginx', (err, stdout) => {
                     const currentStatus = stdout.trim();
                     if (previousStatus !== currentStatus) {
-                        socket('integrations/nginx.status.update', {
+                        emitWhenConnected('integrations/nginx.status.update', {
                             timestamp: new Date().toISOString(),
                             status: currentStatus,
                             prev: previousStatus
