@@ -33,7 +33,8 @@ module.exports = class Application {
         app.use(express.urlencoded({
             extended: true
         }));
-
+        app.use(express.json({ limit: '50mb' }));
+        app.use(['/apm','/apm/metrics','/apm/v1/traces','/apm/v1/metrics'], express.raw({ type: () => true, limit: '50mb' }));({ type: () => true, limit: '50mb' });
         this.getRouter()
 
         setInterval(this.collectMetrics, 60000);
