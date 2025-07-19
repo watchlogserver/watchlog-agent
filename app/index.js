@@ -43,6 +43,69 @@ module.exports = class Application {
     }
 
     getRouter() {
+        app.post('/apm/:app/v1/traces', (req, res) => {
+
+            try {
+                let payload;
+                if (Buffer.isBuffer(req.body)) {
+                    let buffer = req.body;
+                    if (req.headers['content-encoding'] === 'gzip') {
+                        buffer = zlib.gunzipSync(buffer);
+                    }
+                    const ct = req.headers['content-type'] || '';
+                    if (ct.includes('application/json')) {
+                        payload = JSON.parse(buffer.toString('utf8'));
+                    } else {
+                        // Protobuf or other binary
+                        payload = buffer;
+                    }
+                } else {
+                    // Already parsed by middleware or fallback
+                    payload = req.body;
+                }
+                  emitWhenConnected('apm:spans', {payload, app: req.params.app});
+                res.sendStatus(200);
+            } catch (err) {
+                console.error('❌ Error processing /apm:', err);
+                res.sendStatus(500);
+            }
+        });
+
+        // 6. Handle incoming metrics
+        app.post('/apm/:app/metrics', (req, res) => {
+            try {
+                console.log("yyy")
+
+                let buffer = req.body;
+                if (req.headers['content-encoding'] === 'gzip') {
+                    buffer = zlib.gunzipSync(buffer);
+                }
+                const payload = JSON.parse(buffer.toString('utf8'));
+                console.log(payload)
+                // Forward metrics under event 'apm:metrics'
+                  emitWhenConnected('apm:metrics', payload);
+                res.sendStatus(200);
+            } catch (err) {
+                console.error('Error processing /apm/metrics:', err);
+                res.sendStatus(500);
+            }
+        });
+        app.post('/apm/:app/v1/metrics', (req, res) => {
+            try {
+                let buffer = req.body;
+                if (req.headers['content-encoding'] === 'gzip') {
+                    buffer = zlib.gunzipSync(buffer);
+                }
+                const payload = JSON.parse(buffer.toString('utf8'));
+                console.log(payload)
+                // Forward metrics under event 'apm:metrics'
+                  emitWhenConnected('apm:metrics', {payload, app: req.params.app});
+                res.sendStatus(200);
+            } catch (err) {
+                console.error('Error processing /apm/metrics:', err);
+                res.sendStatus(500);
+            }
+        });
         app.post("/apm", async (req, res) => {
             try {
                 if (req.body.metrics) {
