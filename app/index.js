@@ -87,7 +87,7 @@ module.exports = class Application {
                     // Already parsed by middleware or fallback
                     payload = req.body;
                 }
-                emitWhenConnected('apm:spans', { payload, app: req.params.app });
+                  emitWhenConnected('apm:spans', {payload, app: req.params.app});
                 res.sendStatus(200);
             } catch (err) {
                 console.error('❌ Error processing /apm:', err);
@@ -107,7 +107,7 @@ module.exports = class Application {
                 const payload = JSON.parse(buffer.toString('utf8'));
                 console.log(payload)
                 // Forward metrics under event 'apm:metrics'
-                emitWhenConnected('apm:metrics', payload);
+                  emitWhenConnected('apm:metrics', payload);
                 res.sendStatus(200);
             } catch (err) {
                 console.error('Error processing /apm/metrics:', err);
@@ -123,25 +123,13 @@ module.exports = class Application {
                 const payload = JSON.parse(buffer.toString('utf8'));
                 console.log(payload)
                 // Forward metrics under event 'apm:metrics'
-                emitWhenConnected('apm:metrics', { payload, app: req.params.app });
+                  emitWhenConnected('apm:metrics', {payload, app: req.params.app});
                 res.sendStatus(200);
             } catch (err) {
                 console.error('Error processing /apm/metrics:', err);
                 res.sendStatus(500);
             }
         });
-        app.post("/apm", async (req, res) => {
-            try {
-                if (req.body.metrics) {
-                    emitWhenConnected("APM", {
-                        data: req.body.metrics,
-                        platformName: req.body.platformName ? req.body.platformName : "express"
-                    })
-
-                }
-            } catch (error) {
-            }
-        })
         app.get("/", async (req, res) => {
             res.end()
 
