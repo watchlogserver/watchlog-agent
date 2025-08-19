@@ -28,21 +28,47 @@ module.exports = class Application {
     }
 
     runAgent() {
-        app.listen(port, '0.0.0.0', () => console.log(`Watchlog api agent is running on port 3774`))
-        app.use(express.json());
-        app.use(express.urlencoded({
-            extended: true
-        }));
-        app.use(express.json({ limit: '50mb' }));
-        app.use(['/apm','/apm/metrics','/apm/v1/traces','/apm/v1/metrics'], express.raw({ type: () => true, limit: '50mb' }));({ type: () => true, limit: '50mb' });
-
-        this.getRouter()
-
+        app.disable('x-powered-by');
+      
+        // 1) بدنه‌های حجیم و احتمال gzip: اول raw برای مسیرهای APM + AI tracer
+        const RAW_LIMIT = '25mb';
+        app.use(['/apm', '/apm/', '/apm/:app', '/apm/:app/metrics', '/apm/:app/v1/traces', '/apm/:app/v1/metrics'],
+          express.raw({ type: () => true, limit: RAW_LIMIT })
+        );
+        app.use('/ai-tracer',
+          express.raw({ type: () => true, limit: RAW_LIMIT })
+        );
+      
+        // 2) پارسرهای عمومی برای بقیه مسیرها (بعد از raw)
+        app.use(express.json({ limit: '5mb' }));
+        app.use(express.urlencoded({ extended: true, limit: '5mb' }));
+      
+        // 3) روترها
+        this.getRouter();
+      
+        // 4) هندلر خطای body-parser (جلوگیری از کرش و لاگ شفاف)
+        app.use((err, req, res, next) => {
+          if (err && (err.type === 'entity.too.large' || err.status === 413 || err.statusCode === 413)) {
+            const limit = req.originalUrl.startsWith('/apm') || req.originalUrl.startsWith('/ai-tracer') ? RAW_LIMIT : '5mb';
+            return res.status(413).json({ error: 'Payload too large', limit });
+          }
+          next(err);
+        });
+      
+        // 5) fallback error handler
+        app.use((err, req, res, next) => {
+          console.error('Unhandled error:', err);
+          res.status(500).json({ error: 'Internal server error' });
+        });
+      
+        // 6) حالا گوش کن (بعد از آماده شدن همه چیز)
+        app.listen(port, '0.0.0.0', () => console.log(`Watchlog api agent is running on port ${port}`));
+      
+        // 7) تایمرها
         setInterval(this.collectMetrics, 60000);
-        setInterval(() => {
-            collectAndEmitMetrics()
-        }, 60000);
-    }
+        setInterval(() => collectAndEmitMetrics(), 60000);
+      }
+      
 
     getRouter() {
 
@@ -571,35 +597,52 @@ module.exports = class Application {
         })
         app.post("/ai-tracer", async (req, res) => {
             try {
-                const data = req.body;
-                const spans = Array.isArray(data) ? data : [data];
-
-                const validSpans = spans.filter(span =>
-                    span && span.traceId && span.spanId && span.startTime && span.endTime
-                );
-
-                for (const span of validSpans) {
-                    span.duration = new Date(span.endTime).getTime() - new Date(span.startTime).getTime();
-                    span.status = this.determineStatus(span);
+              let payload;
+          
+              if (Buffer.isBuffer(req.body)) {
+                // چون برای /ai-tracer raw گذاشتیم، اینجا Buffer می‌گیریم
+                let buffer = req.body;
+                const enc = (req.headers['content-encoding'] || '').toLowerCase();
+                if (enc.includes('gzip')) {
+                  buffer = zlib.gunzipSync(buffer);
                 }
-
-                if (validSpans.length > 0) {
-                    emitWhenConnected("ai-trace", {
-                        spans: validSpans
-                    });
+                const ct = (req.headers['content-type'] || '').toLowerCase();
+                if (ct.includes('application/json') || ct.includes('text/json') || ct.includes('json') || ct === '') {
+                  payload = JSON.parse(buffer.toString('utf8'));
+                } else {
+                  // اگر کسی فرمت دیگری فرستاد (مثلا پروتوباف) همین خام را بدهیم
+                  payload = buffer;
                 }
-
-                res.status(200).send({
-                    status: "ok",
-                    received: validSpans.length,
-                    skipped: spans.length - validSpans.length
+              } else {
+                // اگر از مسیر json عمومی عبور کرده بود (بدنه کوچک)
+                payload = req.body;
+              }
+          
+              const spans = Array.isArray(payload) ? payload : [payload];
+              const validSpans = spans
+                .filter(s => s && s.traceId && s.spanId && s.startTime && s.endTime)
+                .map(s => {
+                  s.duration = new Date(s.endTime).getTime() - new Date(s.startTime).getTime();
+                  s.status = this.determineStatus(s);
+                  return s;
                 });
-
+          
+              if (validSpans.length > 0) {
+                emitWhenConnected("ai-trace", { spans: validSpans });
+              }
+          
+              res.status(200).send({
+                status: "ok",
+                received: validSpans.length,
+                skipped: spans.length - validSpans.length
+              });
+          
             } catch (err) {
-                console.error("AI tracer error:", err.message);
-                res.status(500).send("Internal error");
+              console.error("AI tracer error:", err);
+              res.status(500).send("Internal error");
             }
-        });
+          });
+          
     }
 
     determineStatus(span) {
