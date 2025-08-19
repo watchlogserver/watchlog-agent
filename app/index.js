@@ -676,33 +676,49 @@ module.exports = class Application {
         })
         app.post("/ai-tracer", async (req, res) => {
             try {
-                const data = req.body;
-                const spans = Array.isArray(data) ? data : [data];
-
-                const validSpans = spans.filter(span =>
-                    span && span.traceId && span.spanId && span.startTime && span.endTime
-                );
-
-                for (const span of validSpans) {
-                    span.duration = new Date(span.endTime).getTime() - new Date(span.startTime).getTime();
-                    span.status = this.determineStatus(span);
+              let payload;
+          
+              if (Buffer.isBuffer(req.body)) {
+                // چون برای /ai-tracer raw گذاشتیم، اینجا Buffer می‌گیریم
+                let buffer = req.body;
+                const enc = (req.headers['content-encoding'] || '').toLowerCase();
+                if (enc.includes('gzip')) {
+                  buffer = zlib.gunzipSync(buffer);
                 }
-
-                if (validSpans.length > 0) {
-                    emitWhenConnected("ai-trace", {
-                        spans: validSpans
-                    });
+                const ct = (req.headers['content-type'] || '').toLowerCase();
+                if (ct.includes('application/json') || ct.includes('text/json') || ct.includes('json') || ct === '') {
+                  payload = JSON.parse(buffer.toString('utf8'));
+                } else {
+                  // اگر کسی فرمت دیگری فرستاد (مثلا پروتوباف) همین خام را بدهیم
+                  payload = buffer;
                 }
-
-                res.status(200).send({
-                    status: "ok",
-                    received: validSpans.length,
-                    skipped: spans.length - validSpans.length
+              } else {
+                // اگر از مسیر json عمومی عبور کرده بود (بدنه کوچک)
+                payload = req.body;
+              }
+          
+              const spans = Array.isArray(payload) ? payload : [payload];
+              const validSpans = spans
+                .filter(s => s && s.traceId && s.spanId && s.startTime && s.endTime)
+                .map(s => {
+                  s.duration = new Date(s.endTime).getTime() - new Date(s.startTime).getTime();
+                  s.status = this.determineStatus(s);
+                  return s;
                 });
-
+          
+              if (validSpans.length > 0) {
+                emitWhenConnected("ai-trace", { spans: validSpans });
+              }
+          
+              res.status(200).send({
+                status: "ok",
+                received: validSpans.length,
+                skipped: spans.length - validSpans.length
+              });
+          
             } catch (err) {
-                console.error("AI tracer error:", err.message);
-                res.status(500).send("Internal error");
+              console.error("AI tracer error:", err);
+              res.status(500).send("Internal error");
             }
         });
     }
