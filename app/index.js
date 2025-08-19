@@ -133,18 +133,6 @@ module.exports = class Application {
                 res.sendStatus(500);
             }
         });
-        app.post("/apm", async (req, res) => {
-            try {
-                if (req.body.metrics) {
-                    emitWhenConnected("APM", {
-                        data: req.body.metrics,
-                        platformName: req.body.platformName ? req.body.platformName : "express"
-                    })
-
-                }
-            } catch (error) {
-            }
-        })
         app.get("/", async (req, res) => {
             res.end()
 
