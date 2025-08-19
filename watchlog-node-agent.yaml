@@ -1,10 +1,16 @@
 apiVersion: v1
+kind: Namespace
+metadata:
+  name: monitoring
+---
+apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: watchlog-node-agent
-  namespace: default
+  namespace: monitoring
 automountServiceAccountToken: true
 ---
+# RBAC: برای Vector که متادیتای K8s را enrich کند
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -13,6 +19,9 @@ rules:
   - apiGroups: [""]
     resources: ["nodes"]
     verbs: ["get"]
+  - apiGroups: [""]
+    resources: ["pods", "namespaces"]
+    verbs: ["get", "list", "watch"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -25,13 +34,115 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: watchlog-node-agent
-    namespace: default
+    namespace: monitoring
+---
+# ConfigMap: تنظیمات Vector (شامل فیلتر namespace و severity)
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vector-config
+  namespace: monitoring
+data:
+  vector.toml: |-
+    [sources.kube]
+    type = "kubernetes_logs"
+    auto_partial_merge = true
+
+    # نرمال‌سازی و استخراج severity
+    [transforms.normalize]
+    type = "remap"
+    inputs = ["kube"]
+    source = '''
+    .cluster    = env("WATCHLOG_CLUSTER_NAME") ?? "default-cluster"
+    .node       = .kubernetes.node_name
+    .namespace  = .kubernetes.pod_namespace
+    .pod        = .kubernetes.pod_name
+    .container  = .kubernetes.container_name
+
+    .timestamp = (.timestamp ?? now())
+    .timestamp = format_timestamp!(.timestamp, "%+")
+
+    .message = to_string!(.message ?? .log ?? "")
+
+    # severity از فیلدها یا پیام
+    .severity = upcase(to_string(.severity ?? .level ?? ""))
+    if is_null(.severity) || .severity == "" {
+      if match(.message, r'(?i)\bERROR\b')      { .severity = "ERROR" }
+      else if match(.message, r'(?i)\bWARN(ING)?\b') { .severity = "WARNING" }
+      else if match(.message, r'(?i)\bINFO\b')   { .severity = "INFO" }
+      else if match(.message, r'(?i)\bDEBUG\b')  { .severity = "DEBUG" }
+      else if match(.message, r'(?i)\bTRACE\b')  { .severity = "TRACE" }
+      else { .severity = "UNKNOWN" }
+    }
+
+    # رتبه‌بندی severity برای فیلتر
+    .rank = 0
+    if .severity == "TRACE"   { .rank = 0 }
+    if .severity == "DEBUG"   { .rank = 1 }
+    if .severity == "INFO"    { .rank = 2 }
+    if .severity == "WARNING" { .rank = 3 }
+    if .severity == "ERROR"   { .rank = 4 }
+
+    .min_sev = upcase(to_string(env("WATCHLOG_MIN_SEVERITY") ?? ""))
+    .min_rank = 0
+    if .min_sev == "TRACE"   { .min_rank = 0 }
+    if .min_sev == "DEBUG"   { .min_rank = 1 }
+    if .min_sev == "INFO"    { .min_rank = 2 }
+    if .min_sev == "WARNING" { .min_rank = 3 }
+    if .min_sev == "ERROR"   { .min_rank = 4 }
+    '''
+
+    # فیلتر بر اساس namespace (Regex include/exclude)
+    [transforms.ns_filter]
+    type = "filter"
+    inputs = ["normalize"]
+    condition = '''
+      .namespace != null &&
+      match(.namespace, regex(env("WATCHLOG_NAMESPACE_INCLUDE_RE") ?? ".*")) &&
+      !( (env("WATCHLOG_NAMESPACE_EXCLUDE_RE") ?? "") != "" && match(.namespace, regex(env("WATCHLOG_NAMESPACE_EXCLUDE_RE"))) )
+    '''
+
+    # فیلتر بر اساس حداقل severity
+    [transforms.sev_filter]
+    type = "filter"
+    inputs = ["ns_filter"]
+    condition = '''
+      .rank >= .min_rank
+    '''
+
+    # پاکسازی فیلدهای کمکی
+    [transforms.drop_helpers]
+    type = "remap"
+    inputs = ["sev_filter"]
+    source = '''
+    del(.kubernetes)
+    del(.min_sev)
+    del(.min_rank)
+    del(.rank)
+    '''
+
+    # ارسال به ایجنت NodeJS روی همین پاد
+    [sinks.agent]
+    type = "http"
+    inputs = ["drop_helpers"]
+    uri = "http://127.0.0.1:3774/ingest/logs"
+    method = "post"
+    encoding.codec = "ndjson"
+    compression = "gzip"
+    batch.max_events = 1000
+    batch.timeout_secs = 5
+    request.in_flight_limit = 8
+    request.retry_initial_backoff_secs = 1
+    request.retry_max_duration_secs = 300
+    buffer.type = "disk"
+    buffer.max_size = 10737418240
+    buffer.when_full = "block"
 ---
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: watchlog-node-agent
-  namespace: default
+  namespace: monitoring
   labels:
     app: watchlog-node-agent
 spec:
@@ -46,7 +157,22 @@ spec:
       serviceAccountName: watchlog-node-agent
       hostNetwork: true
       dnsPolicy: ClusterFirstWithHostNet
+      tolerations:
+        - key: node-role.kubernetes.io/master
+          effect: NoSchedule
+        - key: node-role.kubernetes.io/control-plane
+          effect: NoSchedule
+        - key: node.kubernetes.io/disk-pressure
+          operator: Exists
+          effect: NoSchedule
+        - key: node.kubernetes.io/memory-pressure
+          operator: Exists
+          effect: NoSchedule
+        - key: node.kubernetes.io/network-unavailable
+          operator: Exists
+          effect: NoSchedule
       containers:
+        # --- کانتینر اصلی Agent (NodeJS) ---
         - name: agent
           image: watchlog/watchlog-node-agent:latest
           imagePullPolicy: Always
@@ -62,11 +188,11 @@ spec:
             - name: MODE
               value: "node"
             - name: WATCHLOG_APIKEY
-              value: "8ed204e18781f2c99c6e0bf101ce44d8"
+              value: "${data.apiKey}"
             - name: WATCHLOG_SERVER
-              value: "http://192.168.1.15:7896"
-
-            # Redis
+              value: "${data.server}"
+            - name: WATCHLOG_CLUSTER_NAME
+              value: "default-cluster"
             - name: MONITOR_REDIS
               value: "false"
             - name: REDIS_HOST
@@ -75,8 +201,6 @@ spec:
               value: "6379"
             - name: REDIS_PASSWORD
               value: ""
-
-            # MongoDB
             - name: MONITOR_MONGODB
               value: "false"
             - name: MONGODB_HOST
@@ -87,14 +211,10 @@ spec:
               value: ""
             - name: MONGODB_PASSWORD
               value: ""
-
-            # NGINX
             - name: MONITOR_NGINX
               value: "false"
             - name: NGINX_ACCESS_LOG
               value: "/var/log/nginx/access.log"
-
-            # MySQL
             - name: MONITOR_MYSQL
               value: "false"
             - name: MYSQL_HOST
@@ -107,8 +227,6 @@ spec:
               value: ""
             - name: MYSQL_DATABASES
               value: ""
-
-            # PostgreSQL
             - name: MONITOR_POSTGRESQL
               value: "false"
             - name: POSTGRESQL_HOST
@@ -121,11 +239,8 @@ spec:
               value: ""
             - name: POSTGRESQL_DATABASES
               value: ""
-
-            # Custom Log Watchlist
             - name: LOG_WATCHLIST_JSON
               value: '[]'
-
           volumeMounts:
             - name: host-root
               mountPath: /host
@@ -143,46 +258,76 @@ spec:
           resources:
             requests:
               cpu: "200m"
-              memory: "256Mi"
+              memory: "512Mi"
             limits:
               cpu: "1"
               memory: "1Gi"
-      tolerations:
-        - key: node-role.kubernetes.io/master
-          effect: NoSchedule
-        - key: node-role.kubernetes.io/control-plane
-          effect: NoSchedule
-        - key: node.kubernetes.io/disk-pressure
-          operator: Exists
-          effect: NoSchedule
-        - key: node.kubernetes.io/memory-pressure
-          operator: Exists
-          effect: NoSchedule
-        - key: node.kubernetes.io/network-unavailable
-          operator: Exists
-          effect: NoSchedule
+
+        # --- سایدکار Vector: جمع‌آوری لاگ‌ها و ارسال به Agent ---
+        - name: vector
+          image: ghcr.io/vectordotdev/vector:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: WATCHLOG_CLUSTER_NAME
+              value: "default-cluster"
+            # Regex شامل‌ساز namespace (پیش‌فرض: همه)
+            - name: WATCHLOG_NAMESPACE_INCLUDE_RE
+              value: ".*"
+            # Regex حذف namespace (اگر خالی باشد اعمال نمی‌شود)
+            - name: WATCHLOG_NAMESPACE_EXCLUDE_RE
+              value: ""
+            # حداقل severity: TRACE | DEBUG | INFO | WARNING | ERROR
+            - name: WATCHLOG_MIN_SEVERITY
+              value: "TRACE"
+          args: ["-c", "/etc/vector/vector.toml"]
+          volumeMounts:
+            - name: vector-config
+              mountPath: /etc/vector
+            - name: varlog-containers
+              mountPath: /var/log/containers
+              readOnly: true
+            - name: varlog-pods
+              mountPath: /var/log/pods
+              readOnly: true
+            - name: varlib-docker-containers
+              mountPath: /var/lib/docker/containers
+              readOnly: true
+          securityContext:
+            runAsUser: 0
+            readOnlyRootFilesystem: true
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
       volumes:
         - name: host-root
-          hostPath:
-            path: /
+          hostPath: { path: / }
         - name: proc
-          hostPath:
-            path: /proc
+          hostPath: { path: /proc }
         - name: sys
-          hostPath:
-            path: /sys
+          hostPath: { path: /sys }
         - name: docker-sock
-          hostPath:
-            path: /var/run/docker.sock
+          hostPath: { path: /var/run/docker.sock }
+        - name: vector-config
+          configMap:
+            name: vector-config
+        - name: varlog-containers
+          hostPath: { path: /var/log/containers }
+        - name: varlog-pods
+          hostPath: { path: /var/log/pods }
+        - name: varlib-docker-containers
+          hostPath: { path: /var/lib/docker/containers }
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: watchlog-node-agent
-  namespace: default
+  namespace: monitoring
 spec:
-  selector:
-    app: watchlog-node-agent
+  selector: { app: watchlog-node-agent }
   ports:
     - name: http
       protocol: TCP

@@ -34,7 +34,10 @@ module.exports = class Application {
         }));
         app.use(express.json({ limit: '50mb' }));
         app.use(['/apm','/apm/metrics','/apm/v1/traces','/apm/v1/metrics'], express.raw({ type: () => true, limit: '50mb' }));({ type: () => true, limit: '50mb' });
-
+        app.use(
+            '/ingest/logs',
+            express.raw({ type: () => true, limit: '15mb' })
+        );
         this.getRouter()
 
         setInterval(this.collectMetrics, 60000);
@@ -45,7 +48,17 @@ module.exports = class Application {
         // }, 60000);
         setInterval(() => collectAndEmitSystemMetrics(), 60000);
     }
-
+    inferSeverity(message = '') {
+        const p = String(message).match(/^\s*([IWE])\d{4}/);
+        if (p) return p[1] === 'I' ? 'INFO' : p[1] === 'W' ? 'WARNING' : 'ERROR';
+        const m = String(message).match(/\b(ERROR|WARN(?:ING)?|INFO|DEBUG|TRACE)\b/i);
+        if (m) {
+          const lvl = m[1].toUpperCase();
+          return lvl === 'WARN' ? 'WARNING' : lvl;
+        }
+        return 'UNKNOWN';
+    }
+      
     getRouter() {
         app.get('/healthz', (req, res) => res.send('OK'));
         app.get('/readyz', (req, res) => res.send('READY'));
@@ -124,6 +137,66 @@ module.exports = class Application {
             } catch (error) {
             }
         })
+        // دریافت لاگ‌ها از Vector (سایدکار)
+        app.post('/ingest/logs', (req, res) => {
+            try {
+            // 1) بادی خام + gzip
+            let buf = Buffer.isBuffer(req.body) ? req.body : Buffer.from(req.body || '');
+            const enc = (req.headers['content-encoding'] || '').toLowerCase();
+            if (enc.includes('gzip')) {
+                buf = zlib.gunzipSync(buf);
+            }
+        
+            // 2) تشخیص JSON vs NDJSON
+            const ct = (req.headers['content-type'] || '').toLowerCase();
+            const txt = buf.toString('utf8');
+            let events = [];
+            if (ct.includes('ndjson') || txt.includes('\n{')) {
+                events = txt.split(/\r?\n/).filter(Boolean).map(line => JSON.parse(line));
+            } else if (txt.length) {
+                const parsed = JSON.parse(txt);
+                events = Array.isArray(parsed) ? parsed : [parsed];
+            }
+        
+            // 3) نرمال‌سازی برای Watchlog
+            const clusterName = process.env.WATCHLOG_CLUSTER_NAME || 'default-cluster';
+            const normalized = events.map(e => {
+                const k = e.kubernetes || {};
+                const timestamp =
+                e.timestamp || e.time || e['@timestamp'] || new Date().toISOString();
+        
+                const msg = e.message ?? e.log ?? e.msg ?? '';
+        
+                const obj = {
+                namespace: e.namespace ?? k.pod_namespace,
+                podName:  e.pod ?? k.pod_name,
+                containerName: e.container ?? k.container_name,
+                nodeName: e.node ?? k.node_name,
+                node: e.node ?? k.node_name,
+                timestamp,
+                message: msg,
+                severity: this.inferSeverity(msg),
+                cluster: e.cluster ?? clusterName,
+                };
+        
+                // هر فیلد اضافی‌ای که داری، نگه می‌داریم:
+                if (e.level && !obj.severity) obj.severity = String(e.level).toUpperCase();
+                return obj;
+            });
+        
+            // 4) ارسال به سرور از طریق ساکت، در بچ‌های کوچک
+            const BATCH = 500;
+            for (let i = 0; i < normalized.length; i += BATCH) {
+                emitWhenConnected('podLogLines', normalized.slice(i, i + BATCH));
+            }
+        
+            res.status(200).json({ received: normalized.length });
+            } catch (err) {
+            console.error('ingest/logs error:', err);
+            res.status(400).json({ error: 'bad payload', detail: err.message });
+            }
+        });
+  
         app.get("/", async (req, res) => {
             res.end()
 
