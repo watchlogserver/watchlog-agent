@@ -68,6 +68,7 @@ const watchlogServerSocket = ioServer(watchlog_server, {
             host: os.hostname(),
             ip: getSystemIP(),
             uuid: uuid,
+            clusterNode: "standalone",
             distro: systemOsfo.distro,
             release: systemOsfo.release,
             agentVersion: "0.1.1"

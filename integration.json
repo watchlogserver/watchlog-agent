@@ -38,5 +38,14 @@
         "username": "root",
         "password": "",
         "database": []
+    },
+    {
+    "service": "gitlab",
+    "monitor": false,
+    "baseUrl": "https://gitlab.com",
+    "token": "",
+    "projects": [],
+    "monitorLogs": true,
+    "metrics": {"pipelines": true, "jobs": true, "runners": true, "mrs": true, "deployments": true}
     }
 ]
