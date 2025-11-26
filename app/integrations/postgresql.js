@@ -16,6 +16,9 @@ const agentQueryFilters = agentQueryPatterns.map(p => `query NOT ILIKE '%${p}%'`
 
 exports.getData = async function (host, port, username, password, databases, callback) {
     const result = {
+        id: `${host}:${port}`, // شناسه منحصر به فرد برای هر integration
+        host: host,
+        port: port,
         globalMetrics: {},
         databases: [],
         queryStats: []
@@ -168,7 +171,7 @@ exports.getData = async function (host, port, username, password, databases, cal
 
                 i++
             } catch (err) {
-                console.warn(`⚠️PostgresError Cannot load query stats for ${db}:`, err.message);
+                // console.warn(`⚠️PostgresError Cannot load query stats for ${db}:`, err.message);
                 dbMetrics.queryStats = [];
             }
 

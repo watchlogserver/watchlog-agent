@@ -2,6 +2,9 @@ const mysql = require('mysql2/promise');
 
 exports.getData = async function (host, port, username, password, databases, callback) {
     const result = {
+        id: `${host}:${port}`, // شناسه منحصر به فرد برای هر integration
+        host: host,
+        port: port,
         globalMetrics: {},
         databases: []
     };

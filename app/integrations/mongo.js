@@ -42,6 +42,9 @@ exports.getData = function (host, port, username, password, callback) {
 
                             
                             let metrics = {
+                                id: `${host}:${port}`, // شناسه منحصر به فرد برای هر integration
+                                host: host,
+                                port: port,
                                 version,
                                 uptime: serverStatus.uptime,
                                 connections: serverStatus.connections.current,
@@ -97,6 +100,9 @@ exports.getData = function (host, port, username, password, callback) {
                     const latencyReads = serverStatus.opLatencies.reads.latency;
                     const latencyWrites = serverStatus.opLatencies.writes.latency;
                     let metrics = {
+                        id: `${host}:${port}`, // شناسه منحصر به فرد برای هر integration
+                        host: host,
+                        port: port,
                         version,
                         uptime: serverStatus.uptime,
                         connections: connections,

@@ -58,8 +58,10 @@ exports.getData = function (host, port, password, callback) {
             }
 
             const metrics = {
+                id: `${host}:${port}`, // شناسه منحصر به فرد برای هر integration
                 version: info.redis_version,
                 host: host,
+                port: port,
                 tcp_port: info.tcp_port,
                 uptime: info.uptime_in_seconds,
                 connectedClients: info.connected_clients,

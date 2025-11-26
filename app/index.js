@@ -659,12 +659,12 @@ module.exports = class Application {
 
 
         try {
-            for (let integrate in integrations) {
-                if (integrations[integrate].service == 'mongodb' && integrations[integrate].monitor == true) {
-                    let username = integrations[integrate].username || ""
-                    let password = integrations[integrate].password || ""
-                    let mongoPort = integrations[integrate].port || "27017"
-                    let mongoHost = integrations[integrate].host || "localhost"
+            for (let integrate of integrations) {
+                if (integrate.service === 'mongodb' && integrate.monitor === true) {
+                    let username = integrate.username || ""
+                    let password = integrate.password || ""
+                    let mongoPort = integrate.port || "27017"
+                    let mongoHost = integrate.host || "localhost"
                     mongoIntegration.getData(mongoHost, mongoPort, username, password, (result, err) => {
                         if (result) {
                             emitWhenConnected("integrations/mongodbservice", {
@@ -672,15 +672,14 @@ module.exports = class Application {
                             })
                         }
                     })
-                    break
                 }
             }
         } catch (error) {
-
+            console.error("MongoDB Integration Error:", error.message);
         }
         try {
             for (let integrate of integrations) {
-                if (integrate.service === 'postgresql' && integrate.monitor === true && integrate.database.length > 0) {
+                if (integrate.service === 'postgresql' && integrate.monitor === true && integrate.database && integrate.database.length > 0) {
                     let username = integrate.username || "";
                     let password = integrate.password || "";
                     let port = integrate.port || "5432";
@@ -702,7 +701,7 @@ module.exports = class Application {
 
         try {
             for (let integrate of integrations) {
-                if (integrate.service === 'mysql' && integrate.monitor === true && integrate.database.length > 0) {
+                if (integrate.service === 'mysql' && integrate.monitor === true && integrate.database && integrate.database.length > 0) {
                     let username = integrate.username || "";
                     let password = integrate.password || "";
                     let port = integrate.port || "3306";
@@ -724,11 +723,11 @@ module.exports = class Application {
 
 
         try {
-            for (let integrate in integrations) {
-                if (integrations[integrate].service == 'redis' && integrations[integrate].monitor == true) {
-                    let password = integrations[integrate].password || ""
-                    let redisPort = integrations[integrate].port || 6379
-                    let redisHost = integrations[integrate].host || "127.0.0.1"
+            for (let integrate of integrations) {
+                if (integrate.service === 'redis' && integrate.monitor === true) {
+                    let password = integrate.password || ""
+                    let redisPort = integrate.port || 6379
+                    let redisHost = integrate.host || "127.0.0.1"
                     redisIntegration.getData(redisHost, redisPort, password, (result, err) => {
                         if (result) {
                             emitWhenConnected("integrations/redisservice", {
@@ -736,10 +735,10 @@ module.exports = class Application {
                             })
                         }
                     })
-                    break
                 }
             }
         } catch (error) {
+            console.error("Redis Integration Error:", error.message);
         }
 
         try {
