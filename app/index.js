@@ -69,7 +69,9 @@ module.exports = class Application {
             processes: {
                 topCpu: snapshot.processes.topCpu,
                 topMemory: snapshot.processes.topMemory,
-                restarts: snapshot.processes.restarts,
+                restarts: snapshot.processes.restartWarnings || [],
+                restartWarnings: snapshot.processes.restartWarnings || [],
+                restartEvents: snapshot.processes.restartEvents || [],
                 total: snapshot.processes.total
             },
             ports: snapshot.ports,

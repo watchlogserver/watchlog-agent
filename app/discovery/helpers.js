@@ -55,6 +55,7 @@ function detectRuntime(name, cmd) {
     if (n === 'mysqld') return 'mysql';
     if (n === 'mongod') return 'mongodb';
     if (n === 'pm2' || n === 'pm2-runtime' || c.includes('pm2')) return 'pm2';
+    if (n === 'dockerd' || n === 'docker' || c.includes('dockerd')) return 'docker';
     return null;
 }
 

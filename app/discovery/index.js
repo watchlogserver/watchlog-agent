@@ -49,7 +49,9 @@ async function runDiscovery({ syncConfig = true } = {}) {
             topCpu: processes.topCpu,
             topMemory: processes.topMemory,
             all: processes.all,
-            restarts: processes.restarts,
+            restarts: processes.restartWarnings,
+            restartWarnings: processes.restartWarnings,
+            restartEvents: processes.restartEvents,
             total: processes.total
         },
         ports,
@@ -73,7 +75,9 @@ async function collectProcessSnapshot() {
         timestamp: new Date().toISOString(),
         topCpu: processes.topCpu,
         topMemory: processes.topMemory,
-        restarts: processes.restarts,
+        restarts: processes.restartWarnings,
+        restartWarnings: processes.restartWarnings,
+        restartEvents: processes.restartEvents,
         total: processes.total
     };
 }
