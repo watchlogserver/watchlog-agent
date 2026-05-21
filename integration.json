@@ -8,21 +8,21 @@
     },
     {
         "service": "mongodb",
-        "monitor": false,
+        "monitor": true,
         "username": "",
         "password": "",
         "autoDetected": true,
-        "state": "detected_needs_config",
+        "state": "enabled",
         "recommended": true
     },
     {
         "service": "redis",
-        "monitor": false,
+        "monitor": true,
         "host": "127.0.0.1",
         "port": "6379",
         "password": "",
         "autoDetected": true,
-        "state": "detected_needs_config",
+        "state": "enabled",
         "recommended": true
     },
     {
@@ -71,9 +71,9 @@
     },
     {
         "service": "pm2",
-        "monitor": false,
+        "monitor": true,
         "autoDetected": true,
         "recommended": true,
-        "state": "detected_needs_config"
+        "state": "enabled"
     }
 ]

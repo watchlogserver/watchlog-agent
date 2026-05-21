@@ -25,7 +25,7 @@ const SERVICE_DEFINITIONS = [
         processNames: ['redis-server'],
         ports: [6379],
         logFiles: ['/var/log/redis/redis.log', '/var/log/redis/redis-server.log'],
-        canAutoEnable: false, // needs credentials potentially
+        canAutoEnable: true,
         needsCredentials: false,
         buildConfig: (ports) => ({
             host: '127.0.0.1',
@@ -67,7 +67,7 @@ const SERVICE_DEFINITIONS = [
         processNames: ['mongod'],
         ports: [27017],
         logFiles: ['/var/log/mongodb/mongod.log'],
-        canAutoEnable: false,
+        canAutoEnable: true,
         needsCredentials: false,
         buildConfig: (ports) => ({
             host: 'localhost',
@@ -81,7 +81,7 @@ const SERVICE_DEFINITIONS = [
         processNames: ['pm2', 'pm2-runtime'],
         ports: [],
         logFiles: [],
-        canAutoEnable: false,
+        canAutoEnable: true,
         buildConfig: () => ({})
     }
 ];
