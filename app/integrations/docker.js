@@ -62,19 +62,19 @@ exports.getData = function (callback) {
                                     started: container.started,
                                     state: container.state,
                                     restartCount: container.restartCount,
-                                    ports: container.ports.length > 0 ? container.ports : [],
-                                    mounts: container.mounts.length > 0 ? container.mounts : [],
-                                    memUsage: container.memUsage,
-                                    memLimit: container.memLimit,
-                                    memPercent: container.memPercent,
-                                    cpuPercent: container.cpuPercent,
-                                    netIO_rx: container.netIO.rx,
-                                    netIO_wx: container.netIO.wx,
-                                    blockIO_r: container.blockIO.r,
-                                    blockIO_w: container.blockIO.w
+                                    ports: Array.isArray(container.ports) && container.ports.length > 0 ? container.ports : [],
+                                    mounts: Array.isArray(container.mounts) && container.mounts.length > 0 ? container.mounts : [],
+                                    memUsage: container.memUsage || 0,
+                                    memLimit: container.memLimit || 0,
+                                    memPercent: container.memPercent || 0,
+                                    cpuPercent: container.cpuPercent || 0,
+                                    netIO_rx: container.netIO ? container.netIO.rx || 0 : 0,
+                                    netIO_wx: container.netIO ? container.netIO.wx || 0 : 0,
+                                    blockIO_r: container.blockIO ? container.blockIO.r || 0 : 0,
+                                    blockIO_w: container.blockIO ? container.blockIO.w || 0 : 0
                                 })
                             } catch (error) {
-                                callback(null)
+                                // skip malformed container, don't abort entire callback
                             }
                         })
                         callback({

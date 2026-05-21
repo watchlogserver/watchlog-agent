@@ -47,7 +47,7 @@ function syncIntegrations(discoveredServices) {
                 existing.autoDetected = true;
                 updated = true;
             }
-            if (existing.state === undefined) {
+            if (existing.state === undefined || existing.state !== svc.state) {
                 existing.state = svc.state;
                 updated = true;
             }
@@ -58,6 +58,12 @@ function syncIntegrations(discoveredServices) {
             // For nginx: update accessLog path only if not set by user
             if (svc.service === 'nginx' && svc.config.accessLog && !existing.accessLog) {
                 existing.accessLog = svc.config.accessLog;
+                updated = true;
+            }
+            // Auto-enable monitoring for auto-detected services that need no credentials (state === 'enabled')
+            // Only applies when monitor is still false AND the entry was auto-detected (not manually configured)
+            if (existing.autoDetected && existing.monitor === false && svc.state === 'enabled') {
+                existing.monitor = true;
                 updated = true;
             }
             if (updated) changed = true;

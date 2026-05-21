@@ -133,9 +133,11 @@ function detectServices(processes, ports, logs, docker) {
         if (matchedByDocker) { confidence += 10; reasons.push('Docker container found'); }
         confidence = Math.min(confidence, 95);
 
-        const servicePorts = ports
-            .filter(p => def.ports.includes(p.port))
-            .map(p => p.port);
+        const servicePorts = [...new Set(
+            ports
+                .filter(p => def.ports.includes(p.port))
+                .map(p => p.port)
+        )];
 
         const serviceLogPaths = def.logFiles.filter(lf => fileExists(lf));
         const builtConfig = def.buildConfig(ports, serviceLogPaths);

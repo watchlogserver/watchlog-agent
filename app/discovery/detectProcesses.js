@@ -1,4 +1,5 @@
 const si = require('systeminformation');
+const os = require('os');
 const { execCmd, detectRuntime } = require('./helpers');
 const path = require('path');
 const fs = require('fs');
@@ -76,11 +77,19 @@ async function detectProcesses() {
 
         const processList = [];
 
+        const totalMemBytes = os.totalmem();
+
         for (const p of (procs.list || [])) {
             if (!p.pid || p.pid === 0) continue;
 
             const runtime = detectRuntime(p.name, p.command || p.params || '');
-            const memMB = p.mem_rss ? Math.round(p.mem_rss / 1024) : 0;
+            // systeminformation v5: memRss is in KB on macOS/Linux (from ps output)
+            const memRssKB = typeof p.memRss === 'number' ? p.memRss : 0;
+            const memoryBytes = memRssKB * 1024;
+            const memoryMB = memRssKB ? Math.round(memRssKB / 1024) : 0;
+            const memoryPercent = memoryBytes && totalMemBytes
+                ? Math.round((memoryBytes / totalMemBytes) * 10000) / 100
+                : 0;
 
             processList.push({
                 pid: p.pid,
@@ -89,11 +98,10 @@ async function detectProcesses() {
                 command: p.command || p.params || p.name || '',
                 user: p.user || '',
                 cpu: typeof p.cpu === 'number' ? Math.round(p.cpu * 100) / 100 : 0,
-                memory: memMB,
-                memoryPercent: typeof p.mem_rss === 'number' && procs.mem
-                    ? Math.round((p.mem_rss / procs.mem) * 10000) / 100
-                    : 0,
-                uptime: 0, // filled below selectively
+                memoryBytes,
+                memory: memoryMB,     // kept for backward compat (MB value)
+                memoryPercent,
+                uptime: 0,
                 runtime
             });
         }

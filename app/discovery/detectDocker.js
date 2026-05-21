@@ -71,7 +71,7 @@ async function detectDocker() {
             let health = 'none';
             const healthOut = await execCmd(`docker inspect --format '{{.State.Health.Status}}' ${raw.ID}`);
             if (healthOut && healthOut !== '<no value>') health = healthOut;
-
+            console.log(`[discovery] Detected container: ${raw.Name}, Image: ${raw.Image}, Status: ${raw.Status}, Health: ${health}`);
             containers.push({
                 id: raw.ID,
                 name: raw.Name,

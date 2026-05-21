@@ -1,2158 +1,1478 @@
 {
   "mds_stores": {
     "pid": 545,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "Google Chrome Helper (Renderer)": {
-    "pid": 67523,
-    "seenAt": 1779393272874
+    "pid": 29274,
+    "seenAt": 1779401463257
   },
   "Google Chrome Helper": {
-    "pid": 986,
-    "seenAt": 1779393272874
+    "pid": 988,
+    "seenAt": 1779401463257
   },
   "WindowServer": {
     "pid": 397,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "Termius Helper (GPU)": {
     "pid": 50842,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "Telegram": {
     "pid": 936,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "Google Chrome": {
     "pid": 971,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "Termius Helper (Renderer)": {
     "pid": 50846,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "com.apple.Virtualization.VirtualMachine": {
     "pid": 1387,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "node": {
-    "pid": 64827,
-    "seenAt": 1779393272874
+    "pid": 30968,
+    "seenAt": 1779401463257
   },
   "Claude": {
     "pid": 1334,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "screencaptureui": {
     "pid": 52950,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "Code Helper (Renderer)": {
-    "pid": 69029,
-    "seenAt": 1779393272874
+    "pid": 58806,
+    "seenAt": 1779401463257
   },
   "Code Helper (Plugin)": {
-    "pid": 63688,
-    "seenAt": 1779393272874
+    "pid": 58597,
+    "seenAt": 1779401463257
   },
   "Code Helper (GPU)": {
     "pid": 1636,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "PacketTunnel": {
     "pid": 1309,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "Little Snitch Agent": {
     "pid": 762,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "Code Helper": {
     "pid": 1637,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "claude": {
-    "pid": 58884,
-    "seenAt": 1779393272874
+    "pid": 19162,
+    "seenAt": 1779401463257
   },
   "com.apple.DriverKit-AppleBCMWLAN": {
     "pid": 559,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "mds": {
     "pid": 353,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "logd": {
     "pid": 324,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "fseventsd": {
     "pid": 328,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "at.obdev.littlesnitch.daemon": {
     "pid": 555,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "V2Box": {
     "pid": 1109,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "mongod": {
     "pid": 757,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "at.obdev.littlesnitch.networkextension": {
     "pid": 542,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "runningboardd": {
     "pid": 404,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "Claude Helper": {
     "pid": 1338,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "syspolicyd": {
     "pid": 471,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "Finder": {
     "pid": 636,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "powerd": {
     "pid": 338,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "corebrightnessd": {
     "pid": 392,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "redis-server": {
     "pid": 765,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "mdworker_shared": {
-    "pid": 71403,
-    "seenAt": 1779393272874
+    "pid": 30701,
+    "seenAt": 1779401463257
   },
   "Electron": {
     "pid": 1627,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "com.docker.backend": {
     "pid": 64362,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "StocksWidget": {
     "pid": 60187,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "zsh": {
-    "pid": 64893,
-    "seenAt": 1779393272874
+    "pid": 58889,
+    "seenAt": 1779401463257
   },
   "pet": {
     "pid": 58997,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "codex app-server": {
     "pid": 58527,
-    "seenAt": 1779393272874
-  },
-  "XprotectService": {
-    "pid": 56303,
-    "seenAt": 1779393272874
-  },
-  "seserviced": {
-    "pid": 54690,
-    "seenAt": 1779393272874
-  },
-  "MTLCompilerService": {
-    "pid": 53018,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "mdwrite": {
     "pid": 53017,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "ssh-agent": {
     "pid": 51379,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "com.apple.SafariPlatformSupport.Helper": {
-    "pid": 943,
-    "seenAt": 1779393272874
-  },
-  "VTEncoderXPCService": {
-    "pid": 50853,
-    "seenAt": 1779393272874
-  },
-  "VTDecoderXPCService": {
-    "pid": 1130,
-    "seenAt": 1779393272874
+    "pid": 26444,
+    "seenAt": 1779401463257
   },
   "Termius Helper": {
     "pid": 50844,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "CVMServer": {
     "pid": 50843,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "Termius": {
     "pid": 50840,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "PlugInLibraryService": {
     "pid": 864,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "CloudTelemetryService": {
-    "pid": 536,
-    "seenAt": 1779393272874
-  },
-  "swtransparencyd": {
-    "pid": 32145,
-    "seenAt": 1779393272874
-  },
-  "XProtectUpdateService": {
-    "pid": 32051,
-    "seenAt": 1779393272874
-  },
-  "tzd": {
-    "pid": 32050,
-    "seenAt": 1779393272874
+    "pid": 756,
+    "seenAt": 1779401463257
   },
   "ShipIt com.anthropic.claudefordesktop.ShipIt": {
     "pid": 31397,
-    "seenAt": 1779393272874
-  },
-  "peopled": {
-    "pid": 21911,
-    "seenAt": 1779393272874
-  },
-  "proactived": {
-    "pid": 21912,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "jetpackassetd": {
     "pid": 13330,
-    "seenAt": 1779393272874
-  },
-  "geoanalyticsd": {
-    "pid": 10647,
-    "seenAt": 1779393272874
-  },
-  "XProtect": {
-    "pid": 9294,
-    "seenAt": 1779393272874
-  },
-  "TextThumbnailExtension": {
-    "pid": 2417,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "extensionkitservice": {
-    "pid": 682,
-    "seenAt": 1779393272874
-  },
-  "QuickLookUIService": {
-    "pid": 647,
-    "seenAt": 1779393272874
+    "pid": 715,
+    "seenAt": 1779401463257
   },
   "com.apple.appkit.xpc.openAndSavePanelService": {
     "pid": 2316,
-    "seenAt": 1779393272874
-  },
-  "MENotificationAgent": {
-    "pid": 1639,
-    "seenAt": 1779393272874
-  },
-  "MTLAssetUpgraderD": {
-    "pid": 1638,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "chrome_crashpad_handler": {
-    "pid": 69076,
-    "seenAt": 1779393272874
-  },
-  "aneuserd": {
-    "pid": 1632,
-    "seenAt": 1779393272874
-  },
-  "DockHelper": {
-    "pid": 1624,
-    "seenAt": 1779393272874
+    "pid": 871,
+    "seenAt": 1779401463257
   },
   "Claude Helper (Renderer)": {
     "pid": 1343,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "universalAccessAuthWarn launchd": {
     "pid": 1342,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "netbiosd": {
     "pid": 1306,
-    "seenAt": 1779393272874
-  },
-  "BiomeSELFIngestor": {
-    "pid": 1305,
-    "seenAt": 1779393272874
-  },
-  "IFTelemetrySELFIngestor": {
-    "pid": 1304,
-    "seenAt": 1779393272874
-  },
-  "GMSSELFIngestor": {
-    "pid": 1303,
-    "seenAt": 1779393272874
-  },
-  "IFTranscriptSELFIngestor": {
-    "pid": 1302,
-    "seenAt": 1779393272874
-  },
-  "SAExtensionOrchestrator": {
-    "pid": 1300,
-    "seenAt": 1779393272874
-  },
-  "homeenergyd": {
-    "pid": 1271,
-    "seenAt": 1779393272874
-  },
-  "metrickitd": {
-    "pid": 1270,
-    "seenAt": 1779393272874
-  },
-  "mmaintenanced": {
-    "pid": 1269,
-    "seenAt": 1779393272874
-  },
-  "AuthenticationServicesAgent": {
-    "pid": 1268,
-    "seenAt": 1779393272874
-  },
-  "keyboardservicesd": {
-    "pid": 1245,
-    "seenAt": 1779393272874
-  },
-  "AppleSpell": {
-    "pid": 1243,
-    "seenAt": 1779393272874
-  },
-  "naturallanguaged": {
-    "pid": 1244,
-    "seenAt": 1779393272874
-  },
-  "coreautha": {
-    "pid": 1239,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "powerdatad": {
     "pid": 1197,
-    "seenAt": 1779393272874
-  },
-  "ASPCarryLog": {
-    "pid": 1199,
-    "seenAt": 1779393272874
-  },
-  "PasswordBreachAgent": {
-    "pid": 1195,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "feedbackd": {
-    "pid": 1196,
-    "seenAt": 1779393272874
-  },
-  "amsondevicestoraged": {
-    "pid": 1193,
-    "seenAt": 1779393272874
-  },
-  "com.apple.audio.SandboxHelper": {
-    "pid": 1184,
-    "seenAt": 1779393272874
-  },
-  "com.apple.tonelibraryd": {
-    "pid": 1183,
-    "seenAt": 1779393272874
-  },
-  "SafariBookmarksSyncAgent": {
-    "pid": 1173,
-    "seenAt": 1779393272874
+    "pid": 21739,
+    "seenAt": 1779401463257
   },
   "dataaccessd": {
     "pid": 1172,
-    "seenAt": 1779393272874
-  },
-  "ManagedConfigurationFilesSubscriber": {
-    "pid": 1169,
-    "seenAt": 1779393272874
-  },
-  "ManagementTestSubscriber": {
-    "pid": 1168,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "managedappdistributiond": {
     "pid": 1167,
-    "seenAt": 1779393272874
-  },
-  "ManagedAppsSubscriber": {
-    "pid": 1166,
-    "seenAt": 1779393272874
-  },
-  "SoftwareUpdateSubscriber": {
-    "pid": 1165,
-    "seenAt": 1779393272874
-  },
-  "DiskManagementSubscriber": {
-    "pid": 1164,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "tipsd": {
     "pid": 1163,
-    "seenAt": 1779393272874
-  },
-  "PasscodeSettingsSubscriber": {
-    "pid": 1162,
-    "seenAt": 1779393272874
-  },
-  "LegacyProfilesSubscriber": {
-    "pid": 1161,
-    "seenAt": 1779393272874
-  },
-  "ScreenSharingSubscriber": {
-    "pid": 1158,
-    "seenAt": 1779392912888
-  },
-  "InteractiveLegacyProfilesSubscriber": {
-    "pid": 1157,
-    "seenAt": 1779392912888
+    "seenAt": 1779401463257
   },
   "distnoted": {
-    "pid": 434,
-    "seenAt": 1779393272874
-  },
-  "SecuritySubscriber": {
-    "pid": 1155,
-    "seenAt": 1779392912888
+    "pid": 379,
+    "seenAt": 1779401463257
   },
   "online-auth-agent": {
-    "pid": 1154,
-    "seenAt": 1779393272874
-  },
-  "remotemanagementd": {
-    "pid": 1153,
-    "seenAt": 1779393272874
+    "pid": 22108,
+    "seenAt": 1779401463257
   },
   "spotlightknowledged": {
     "pid": 875,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "contactsd": {
-    "pid": 1118,
-    "seenAt": 1779393272874
+    "pid": 23413,
+    "seenAt": 1779401463257
   },
   "SiriNCService": {
     "pid": 1116,
-    "seenAt": 1779393272874
-  },
-  "mdworker": {
-    "pid": 1108,
-    "seenAt": 1779392912888
-  },
-  "fudHelperAgent": {
-    "pid": 1102,
-    "seenAt": 1779392912888
-  },
-  "diagnosticextensionsd": {
-    "pid": 1066,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "WeatherWidget": {
     "pid": 1050,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "AssetCacheLocatorService": {
-    "pid": 830,
-    "seenAt": 1779393272874
+    "pid": 24946,
+    "seenAt": 1779401463257
   },
   "containermanagerd": {
-    "pid": 552,
-    "seenAt": 1779393272874
+    "pid": 625,
+    "seenAt": 1779401463257
   },
   "com.apple.geod": {
     "pid": 510,
-    "seenAt": 1779393272874
-  },
-  "ANECompilerService": {
-    "pid": 1045,
-    "seenAt": 1779392912888
-  },
-  "ReportCrash": {
-    "pid": 721,
-    "seenAt": 1779393272874
-  },
-  "fairplaydeviceidentityd": {
-    "pid": 1038,
-    "seenAt": 1779393272874
-  },
-  "promotedcontentd": {
-    "pid": 1035,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "assistant_service": {
     "pid": 1023,
-    "seenAt": 1779393272874
-  },
-  "adprivacyd": {
-    "pid": 1021,
-    "seenAt": 1779393272874
-  },
-  "weatherd": {
-    "pid": 1022,
-    "seenAt": 1779393272874
-  },
-  "homeeventsd": {
-    "pid": 1020,
-    "seenAt": 1779392852914
-  },
-  "SiriSuggestionsBookkeepingService": {
-    "pid": 1018,
-    "seenAt": 1779393272874
-  },
-  "SpeechSynthesisServerXPC": {
-    "pid": 1015,
-    "seenAt": 1779393272874
-  },
-  "SafariLaunchAgent": {
-    "pid": 1002,
-    "seenAt": 1779392852914
-  },
-  "contentlinkingd": {
-    "pid": 998,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "MessagesActionExtension": {
     "pid": 995,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "SafariLinkExtension": {
     "pid": 993,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "CalendarIntentsExtension": {
     "pid": 990,
-    "seenAt": 1779393272874
-  },
-  "siriinferenced": {
-    "pid": 984,
-    "seenAt": 1779393272874
-  },
-  "ShortcutsViewService": {
-    "pid": 980,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "AppPredictionIntentsHelperService": {
     "pid": 978,
-    "seenAt": 1779393272874
-  },
-  "betaenrollmentd": {
-    "pid": 977,
-    "seenAt": 1779393272874
-  },
-  "betaenrollmentagent": {
-    "pid": 976,
-    "seenAt": 1779393272874
-  },
-  "spindump_agent": {
-    "pid": 974,
-    "seenAt": 1779392852914
-  },
-  "spindump": {
-    "pid": 973,
-    "seenAt": 1779392852914
+    "seenAt": 1779401463257
   },
   "CrashReporterSupportHelper": {
     "pid": 972,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "SubmitDiagInfo": {
     "pid": 970,
-    "seenAt": 1779393272874
-  },
-  "ecosystemd": {
-    "pid": 969,
-    "seenAt": 1779392852914
-  },
-  "progressd": {
-    "pid": 966,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "Keychain Circle Notification": {
-    "pid": 963,
-    "seenAt": 1779393272874
-  },
-  "storekitagent": {
-    "pid": 960,
-    "seenAt": 1779393272874
+    "pid": 8874,
+    "seenAt": 1779401463257
   },
   "secd": {
     "pid": 638,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "NewsScoringService": {
     "pid": 954,
-    "seenAt": 1779393272874
-  },
-  "assetsubscriptiond": {
-    "pid": 953,
-    "seenAt": 1779393272874
-  },
-  "analyticsagent": {
-    "pid": 951,
-    "seenAt": 1779393272874
-  },
-  "siriknowledged": {
-    "pid": 950,
-    "seenAt": 1779393272874
-  },
-  "ndoagent": {
-    "pid": 949,
-    "seenAt": 1779392852914
-  },
-  "voicebankingd": {
-    "pid": 948,
-    "seenAt": 1779393272874
-  },
-  "XProtectPluginService": {
-    "pid": 547,
-    "seenAt": 1779393272874
-  },
-  "swcd": {
-    "pid": 946,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "WorldClockWidget": {
     "pid": 945,
-    "seenAt": 1779393272874
-  },
-  "UsageTrackingAgent": {
-    "pid": 942,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "IntelligencePlatformComputeService": {
-    "pid": 940,
-    "seenAt": 1779393272874
-  },
-  "intelligencecontextd": {
-    "pid": 939,
-    "seenAt": 1779393272874
-  },
-  "captiveagent": {
-    "pid": 938,
-    "seenAt": 1779393272874
-  },
-  "IMTransferAgent": {
-    "pid": 937,
-    "seenAt": 1779393272874
-  },
-  "parsec-fbf": {
-    "pid": 819,
-    "seenAt": 1779393272874
+    "pid": 23414,
+    "seenAt": 1779401463257
   },
   "diagnostics_agent": {
     "pid": 780,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "mdbulkimport": {
     "pid": 934,
-    "seenAt": 1779393272874
-  },
-  "AUCrashHandlerService": {
-    "pid": 925,
-    "seenAt": 1779392852914
-  },
-  "StocksKitService": {
-    "pid": 891,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "IOUserBluetoothSerialDriver": {
     "pid": 926,
-    "seenAt": 1779393272874
-  },
-  "ecosystemanalyticsd": {
-    "pid": 706,
-    "seenAt": 1779392852914
-  },
-  "lockdownmoded": {
-    "pid": 919,
-    "seenAt": 1779393272874
-  },
-  "mapssyncd": {
-    "pid": 914,
-    "seenAt": 1779393272874
-  },
-  "com.apple.AppStoreDaemon.StorePrivilegedODRService": {
-    "pid": 913,
-    "seenAt": 1779392852914
-  },
-  "com.apple.MobileInstallationHelperService": {
-    "pid": 911,
-    "seenAt": 1779392852914
-  },
-  "installcoordinationd": {
-    "pid": 910,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "countryd": {
     "pid": 908,
-    "seenAt": 1779393272874
-  },
-  "WardaSynthesizer": {
-    "pid": 904,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "installd": {
-    "pid": 902,
-    "seenAt": 1779393272874
+    "pid": 83903,
+    "seenAt": 1779401463257
   },
   "system_installd": {
-    "pid": 903,
-    "seenAt": 1779393272874
+    "pid": 83902,
+    "seenAt": 1779401463257
   },
   "appstoreagent": {
     "pid": 901,
-    "seenAt": 1779393272874
-  },
-  "geodMachServiceBridge": {
-    "pid": 900,
-    "seenAt": 1779393272874
-  },
-  "deleted_helper": {
-    "pid": 899,
-    "seenAt": 1779393272874
-  },
-  "KonaSynthesizer": {
-    "pid": 898,
-    "seenAt": 1779393272874
-  },
-  "MacinTalkAUSP": {
-    "pid": 894,
-    "seenAt": 1779393272874
-  },
-  "SiriAUSP": {
-    "pid": 890,
-    "seenAt": 1779393272874
-  },
-  "MauiAUSP": {
-    "pid": 889,
-    "seenAt": 1779393272874
-  },
-  "ModelCatalogAgent": {
-    "pid": 887,
-    "seenAt": 1779393272874
-  },
-  "NFStorageServer": {
-    "pid": 885,
-    "seenAt": 1779392852914
-  },
-  "inputanalyticsd": {
-    "pid": 883,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "milod": {
     "pid": 881,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "HostInferenceProviderService": {
     "pid": 880,
-    "seenAt": 1779393272874
-  },
-  "nfcd": {
-    "pid": 878,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "Canva Helper": {
     "pid": 879,
-    "seenAt": 1779393272874
-  },
-  "AppleDeviceQueryService": {
-    "pid": 877,
-    "seenAt": 1779392852914
-  },
-  "gamecontrolleragentd": {
-    "pid": 876,
-    "seenAt": 1779392852914
-  },
-  "ThunderboltAccessoryUpdaterService": {
-    "pid": 867,
-    "seenAt": 1779392852914
-  },
-  "com.apple.ColorSyncXPCAgent": {
-    "pid": 869,
-    "seenAt": 1779392852914
-  },
-  "colorsync.useragent": {
-    "pid": 868,
-    "seenAt": 1779392852914
+    "seenAt": 1779401463257
   },
   "fairplayd": {
     "pid": 863,
-    "seenAt": 1779393272874
-  },
-  "AssetCacheTetheratorService": {
-    "pid": 861,
-    "seenAt": 1779392852914
-  },
-  "remindd": {
-    "pid": 782,
-    "seenAt": 1779393272874
-  },
-  "axassetsd": {
-    "pid": 760,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "CalendarWidgetExtension": {
     "pid": 860,
-    "seenAt": 1779393272874
-  },
-  "askpermissiond": {
-    "pid": 772,
-    "seenAt": 1779393272874
-  },
-  "photoanalysisd": {
-    "pid": 858,
-    "seenAt": 1779392852914
-  },
-  "UARPUpdaterServiceHID": {
-    "pid": 854,
-    "seenAt": 1779392852914
-  },
-  "UARPUpdaterServiceAFU": {
-    "pid": 851,
-    "seenAt": 1779392852914
-  },
-  "UARPUpdaterServiceDisplay": {
-    "pid": 853,
-    "seenAt": 1779392852914
-  },
-  "UARPUpdaterServiceUSBPD": {
-    "pid": 852,
-    "seenAt": 1779392852914
-  },
-  "UARPUpdaterServiceLegacyAudio": {
-    "pid": 855,
-    "seenAt": 1779392852914
-  },
-  "cloudphotod": {
-    "pid": 850,
-    "seenAt": 1779393272874
-  },
-  "SetStoreUpdateService": {
-    "pid": 849,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "systemstats": {
     "pid": 332,
-    "seenAt": 1779393272874
-  },
-  "com.apple.sbd": {
-    "pid": 624,
-    "seenAt": 1779392852914
+    "seenAt": 1779401463257
   },
   "ContextStoreAgent": {
     "pid": 730,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "postgres": {
     "pid": 774,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "commerce": {
     "pid": 841,
-    "seenAt": 1779393272874
-  },
-  "FeatureAccessAgent": {
-    "pid": 839,
-    "seenAt": 1779393272874
-  },
-  "TrialArchivingService": {
-    "pid": 838,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "assistantd": {
     "pid": 836,
-    "seenAt": 1779393272874
-  },
-  "postersyncd": {
-    "pid": 835,
-    "seenAt": 1779393272874
-  },
-  "TrustedPeersHelper": {
-    "pid": 834,
-    "seenAt": 1779393272874
-  },
-  "AssetCache": {
-    "pid": 833,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "wifivelocityd": {
     "pid": 832,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "wifianalyticsd": {
     "pid": 831,
-    "seenAt": 1779393272874
-  },
-  "recentsd": {
-    "pid": 829,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "mediaremoteagent": {
     "pid": 827,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "avconferenced": {
     "pid": 826,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "coresymbolicationd": {
-    "pid": 828,
-    "seenAt": 1779393272874
+    "pid": 22025,
+    "seenAt": 1779401463257
   },
   "adid": {
     "pid": 824,
-    "seenAt": 1779393272874
-  },
-  "localspeechrecognition": {
-    "pid": 808,
-    "seenAt": 1779393272874
-  },
-  "iCloudNotificationAgent": {
-    "pid": 822,
-    "seenAt": 1779393272874
-  },
-  "amsengagementd": {
-    "pid": 821,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "amsaccountsd": {
     "pid": 783,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "searchpartyuseragent": {
     "pid": 820,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "triald": {
-    "pid": 818,
-    "seenAt": 1779393272874
-  },
-  "itunescloudd": {
-    "pid": 817,
-    "seenAt": 1779393272874
+    "pid": 22130,
+    "seenAt": 1779401463257
   },
   "networkserviceproxy": {
     "pid": 816,
-    "seenAt": 1779393272874
-  },
-  "appleaccountd": {
-    "pid": 751,
-    "seenAt": 1779393272874
-  },
-  "appplaceholdersyncd": {
-    "pid": 770,
-    "seenAt": 1779392852914
-  },
-  "translationd": {
-    "pid": 815,
-    "seenAt": 1779392912888
-  },
-  "sirittsd": {
-    "pid": 812,
-    "seenAt": 1779392852914
-  },
-  "frauddefensed": {
-    "pid": 811,
-    "seenAt": 1779392802737
-  },
-  "ScopedBookmarkAgent": {
-    "pid": 810,
-    "seenAt": 1779393272874
-  },
-  "com.apple.FaceTime.FTConversationService": {
-    "pid": 809,
-    "seenAt": 1779392852914
+    "seenAt": 1779401463257
   },
   "ospredictiond": {
-    "pid": 807,
-    "seenAt": 1779393272874
-  },
-  "IMDPersistenceAgent": {
-    "pid": 806,
-    "seenAt": 1779393272874
+    "pid": 21979,
+    "seenAt": 1779401463257
   },
   "photolibraryd": {
-    "pid": 805,
-    "seenAt": 1779393272874
-  },
-  "assistant_cdmd": {
-    "pid": 803,
-    "seenAt": 1779393272874
-  },
-  "maild": {
-    "pid": 802,
-    "seenAt": 1779393272874
+    "pid": 99894,
+    "seenAt": 1779401463257
   },
   "mediaanalysisd": {
     "pid": 801,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "gamepolicyd": {
     "pid": 800,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "ctkahp": {
     "pid": 785,
-    "seenAt": 1779393272874
-  },
-  "SoftwareUpdateNotificationManager": {
-    "pid": 796,
-    "seenAt": 1779393272874
-  },
-  "FindMyMacd": {
-    "pid": 797,
-    "seenAt": 1779392802737
-  },
-  "pbs": {
-    "pid": 795,
-    "seenAt": 1779393272874
-  },
-  "ProtectedCloudKeySyncing": {
-    "pid": 794,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "figma_agent": {
     "pid": 793,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "com.apple.CloudDocs.iCloudDriveFileProvider": {
     "pid": 789,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "homed": {
     "pid": 792,
-    "seenAt": 1779393272874
-  },
-  "parsecd": {
-    "pid": 791,
-    "seenAt": 1779393272874
-  },
-  "TextInputSwitcher": {
-    "pid": 790,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "influxd": {
     "pid": 771,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "PAH_Extension": {
     "pid": 788,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "CursorUIViewService": {
     "pid": 787,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "corespeechd": {
     "pid": 759,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "imagent": {
     "pid": 778,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "icdd": {
     "pid": 768,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "heard": {
     "pid": 758,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "TextInputMenuAgent": {
     "pid": 781,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "imklaunchagent": {
     "pid": 764,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "AirPlayUIAgent": {
     "pid": 777,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "Siri": {
     "pid": 767,
-    "seenAt": 1779393272874
-  },
-  "WiFiCloudAssetsXPCService": {
-    "pid": 745,
-    "seenAt": 1779392852914
+    "seenAt": 1779401463257
   },
   "akd": {
     "pid": 753,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "Spotlight": {
     "pid": 755,
-    "seenAt": 1779393272874
-  },
-  "AppSSODaemon": {
-    "pid": 750,
-    "seenAt": 1779393272874
-  },
-  "followupd": {
-    "pid": 747,
-    "seenAt": 1779393272874
-  },
-  "AppSSOAgent": {
-    "pid": 746,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "familycircled": {
     "pid": 744,
-    "seenAt": 1779393272874
-  },
-  "financed": {
-    "pid": 743,
-    "seenAt": 1779392852914
-  },
-  "generativeexperiencesd": {
-    "pid": 742,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "ScreenTimeAgent": {
     "pid": 740,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "corespotlightd": {
     "pid": 677,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "ContainerMetadataExtractor": {
-    "pid": 739,
-    "seenAt": 1779393272874
+    "pid": 24943,
+    "seenAt": 1779401463257
   },
   "NotificationCenter": {
     "pid": 738,
-    "seenAt": 1779393272874
-  },
-  "ContextService": {
-    "pid": 737,
-    "seenAt": 1779392852914
+    "seenAt": 1779401463257
   },
   "assessmentagent": {
-    "pid": 69202,
-    "seenAt": 1779393272874
-  },
-  "mobilerepaird": {
-    "pid": 733,
-    "seenAt": 1779392852914
+    "pid": 21728,
+    "seenAt": 1779401463257
   },
   "WiFiAgent": {
     "pid": 731,
-    "seenAt": 1779393272874
-  },
-  "CategoriesService": {
-    "pid": 732,
-    "seenAt": 1779392852914
+    "seenAt": 1779401463257
   },
   "routined": {
     "pid": 729,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "CommCenter": {
-    "pid": 727,
-    "seenAt": 1779393272874
-  },
-  "APFSUserAgent": {
-    "pid": 725,
-    "seenAt": 1779392802737
+    "pid": 21763,
+    "seenAt": 1779401463257
   },
   "StatusKitAgent": {
     "pid": 723,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "BatteriesAvocadoWidgetExtension": {
     "pid": 724,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "ScreenTimeWidgetExtension": {
     "pid": 722,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "duetexpertd": {
     "pid": 719,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "UIKitSystem": {
     "pid": 718,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "NewsToday2": {
     "pid": 717,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "nsurlsessiond": {
     "pid": 420,
-    "seenAt": 1779393272874
-  },
-  "ManagedSettingsAgent": {
-    "pid": 713,
-    "seenAt": 1779393272874
-  },
-  "replicatord": {
-    "pid": 711,
-    "seenAt": 1779393272874
-  },
-  "liveactivitiesd": {
-    "pid": 712,
-    "seenAt": 1779393272874
-  },
-  "kernelmanager_helper": {
-    "pid": 710,
-    "seenAt": 1779392852914
-  },
-  "deviceinterfaced": {
-    "pid": 709,
-    "seenAt": 1779392852914
-  },
-  "localizationswitcherd": {
-    "pid": 708,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "com.apple.dock.extra": {
     "pid": 707,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "useractivityd": {
     "pid": 705,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "oahd": {
     "pid": 704,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "WallpaperSequoiaExtension": {
     "pid": 702,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "usernoted": {
     "pid": 701,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "sharingd": {
     "pid": 700,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "chronod": {
     "pid": 699,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "replayd": {
-    "pid": 697,
-    "seenAt": 1779393272874
-  },
-  "AudioComponentRegistrar": {
-    "pid": 483,
-    "seenAt": 1779393272874
+    "pid": 21752,
+    "seenAt": 1779401463257
   },
   "ctkd": {
-    "pid": 689,
-    "seenAt": 1779393272874
+    "pid": 23471,
+    "seenAt": 1779401463257
   },
   "coreauthd": {
-    "pid": 590,
-    "seenAt": 1779393272874
+    "pid": 23472,
+    "seenAt": 1779401463257
   },
   "findmylocateagent": {
     "pid": 693,
-    "seenAt": 1779393272874
-  },
-  "mobiletimerd": {
-    "pid": 691,
-    "seenAt": 1779392802737
-  },
-  "LoginUserService": {
-    "pid": 694,
-    "seenAt": 1779392802737
+    "seenAt": 1779401463257
   },
   "CMFSyncAgent": {
     "pid": 692,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "syncdefaultsd": {
-    "pid": 690,
-    "seenAt": 1779393272874
-  },
-  "intelligentroutingd": {
-    "pid": 687,
-    "seenAt": 1779393272874
-  },
-  "transparencyd": {
-    "pid": 686,
-    "seenAt": 1779393272874
+    "pid": 86960,
+    "seenAt": 1779401463257
   },
   "nearbyd": {
     "pid": 688,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "WallpaperImageExtension": {
     "pid": 685,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "WallpaperAerialsExtension": {
     "pid": 684,
-    "seenAt": 1779393272874
-  },
-  "communicationtrustd": {
-    "pid": 683,
-    "seenAt": 1779393272874
-  },
-  "wallpaperexportd": {
-    "pid": 680,
-    "seenAt": 1779392802737
+    "seenAt": 1779401463257
   },
   "donotdisturbd": {
-    "pid": 681,
-    "seenAt": 1779393272874
+    "pid": 24869,
+    "seenAt": 1779401463257
   },
   "wifip2pd": {
     "pid": 679,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "ViewBridgeAuxiliary": {
     "pid": 678,
-    "seenAt": 1779393272874
-  },
-  "cdpd": {
-    "pid": 675,
-    "seenAt": 1779393272874
-  },
-  "deleted": {
-    "pid": 676,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "usernotificationsd": {
     "pid": 674,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "identityservicesd": {
     "pid": 673,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "fontworker": {
     "pid": 672,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "accountsd": {
     "pid": 671,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "fontd": {
     "pid": 670,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "iconservicesagent": {
     "pid": 669,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "callservicesd": {
     "pid": 668,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "suggestd": {
     "pid": 665,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "CoreLocationAgent": {
     "pid": 663,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "calaccessd": {
     "pid": 666,
-    "seenAt": 1779393272874
-  },
-  "sociallayerd": {
-    "pid": 664,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "fileproviderd": {
     "pid": 659,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "AMPDeviceDiscoveryAgent": {
     "pid": 661,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "pkd": {
-    "pid": 660,
-    "seenAt": 1779393272874
-  },
-  "siriactionsd": {
-    "pid": 657,
-    "seenAt": 1779393272874
+    "pid": 22124,
+    "seenAt": 1779401463257
   },
   "sharedfilelistd": {
     "pid": 658,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "filecoordinationd": {
     "pid": 656,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "automountd": {
     "pid": 655,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "tccd": {
     "pid": 398,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "cloudd": {
-    "pid": 493,
-    "seenAt": 1779393272874
+    "pid": 649,
+    "seenAt": 1779401463257
   },
   "bird": {
-    "pid": 648,
-    "seenAt": 1779393272874
-  },
-  "systemsoundserverd": {
-    "pid": 651,
-    "seenAt": 1779393272874
+    "pid": 12768,
+    "seenAt": 1779401463257
   },
   "secinitd": {
-    "pid": 653,
-    "seenAt": 1779393272874
-  },
-  "com.apple.hiservices-xpcservice": {
-    "pid": 650,
-    "seenAt": 1779393272874
+    "pid": 22139,
+    "seenAt": 1779401463257
   },
   "WallpaperAgent": {
     "pid": 652,
-    "seenAt": 1779393272874
-  },
-  "com.apple.quicklook.ThumbnailsAgent": {
-    "pid": 646,
-    "seenAt": 1779393272874
-  },
-  "dmd": {
-    "pid": 645,
-    "seenAt": 1779393272874
-  },
-  "csnameddatad": {
-    "pid": 643,
-    "seenAt": 1779392852914
+    "seenAt": 1779401463257
   },
   "rapportd": {
     "pid": 642,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "AccessibilityUIServer": {
     "pid": 641,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "audioaccessoryd": {
     "pid": 637,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "SystemUIServer": {
     "pid": 635,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "trustd": {
-    "pid": 534,
-    "seenAt": 1779393272874
+    "pid": 633,
+    "seenAt": 1779401463257
   },
   "ControlCenter": {
     "pid": 634,
-    "seenAt": 1779393272874
-  },
-  "talagentd": {
-    "pid": 631,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "Dock": {
     "pid": 632,
-    "seenAt": 1779393272874
-  },
-  "BackgroundTaskManagementAgent": {
-    "pid": 630,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "linkd": {
     "pid": 629,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "lsd": {
     "pid": 407,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "BiomeAgent": {
     "pid": 627,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "pboard": {
     "pid": 626,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "knowledge-agent": {
     "pid": 616,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "UserEventAgent": {
-    "pid": 596,
-    "seenAt": 1779393272874
+    "pid": 326,
+    "seenAt": 1779401463257
   },
   "ContinuityCaptureAgent": {
     "pid": 621,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "neagent": {
     "pid": 612,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "WindowManager": {
     "pid": 608,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "universalaccessd launchd": {
     "pid": 623,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "CoreServicesUIAgent": {
     "pid": 622,
-    "seenAt": 1779393272874
-  },
-  "uarpd": {
-    "pid": 609,
-    "seenAt": 1779392852914
-  },
-  "seld": {
-    "pid": 603,
-    "seenAt": 1779393272874
-  },
-  "gamecontrollerd": {
-    "pid": 598,
-    "seenAt": 1779392852914
+    "seenAt": 1779401463257
   },
   "cfprefsd": {
-    "pid": 399,
-    "seenAt": 1779393272874
-  },
-  "corekdld": {
-    "pid": 593,
-    "seenAt": 1779392802737
-  },
-  "applekeystored": {
-    "pid": 591,
-    "seenAt": 1779392802737
+    "pid": 22146,
+    "seenAt": 1779401463257
   },
   "sysmond": {
     "pid": 588,
-    "seenAt": 1779393272874
-  },
-  "XProtectBridgeService": {
-    "pid": 586,
-    "seenAt": 1779393272874
-  },
-  "findmydeviced": {
-    "pid": 579,
-    "seenAt": 1779392852914
-  },
-  "com.apple.MobileSoftwareUpdate.CleanupPreparePathService": {
-    "pid": 577,
-    "seenAt": 1779392852914
-  },
-  "GSSCred": {
-    "pid": 575,
-    "seenAt": 1779392852914
-  },
-  "at.obdev.littlesnitch.networking": {
-    "pid": 567,
-    "seenAt": 1779392802737
+    "seenAt": 1779401463257
   },
   "rtcreportingd": {
     "pid": 566,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "com.apple.AppleUserHIDDrivers": {
     "pid": 561,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "com.apple.DriverKit-IOUserDockChannelSerial": {
     "pid": 560,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "searchpartyd": {
     "pid": 558,
-    "seenAt": 1779393272874
-  },
-  "bootinstalld": {
-    "pid": 557,
-    "seenAt": 1779392802737
-  },
-  "symptomsd-diag": {
-    "pid": 556,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "osanalyticshelper": {
-    "pid": 553,
-    "seenAt": 1779393272874
-  },
-  "modelcatalogd": {
-    "pid": 551,
-    "seenAt": 1779392852914
+    "pid": 22138,
+    "seenAt": 1779401463257
   },
   "suhelperd": {
     "pid": 549,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "triald_system": {
-    "pid": 546,
-    "seenAt": 1779393272874
+    "pid": 22129,
+    "seenAt": 1779401463257
   },
   "softwareupdated": {
-    "pid": 346,
-    "seenAt": 1779393272874
+    "pid": 22090,
+    "seenAt": 1779401463257
   },
   "appleeventsd": {
     "pid": 532,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "modelmanagerd": {
     "pid": 530,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "UVCAssistant": {
     "pid": 509,
-    "seenAt": 1779393272874
-  },
-  "PerfPowerTelemetryClientRegistrationService": {
-    "pid": 514,
-    "seenAt": 1779393272874
-  },
-  "audioanalyticsd": {
-    "pid": 511,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "cameracaptured": {
     "pid": 508,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "appleh13camerad": {
     "pid": 507,
-    "seenAt": 1779393272874
-  },
-  "colorsyncd": {
-    "pid": 506,
-    "seenAt": 1779392852914
+    "seenAt": 1779401463257
   },
   "com.apple.cmio.videodriverkithostextension": {
     "pid": 504,
-    "seenAt": 1779393272874
-  },
-  "findmybeaconingd": {
-    "pid": 505,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "com.docker.vmnetd": {
     "pid": 502,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "expressvpnd": {
     "pid": 501,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "WirelessRadioManagerd": {
     "pid": 499,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "audioclocksyncd": {
     "pid": 498,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "backupd": {
     "pid": 497,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "securityd_system": {
     "pid": 496,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "mobileactivationd": {
     "pid": 494,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "storagekitd": {
     "pid": 482,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "mDNSResponderHelper": {
     "pid": 478,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "audiomxd": {
     "pid": 474,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "com.apple.CodeSigningHelper": {
     "pid": 476,
-    "seenAt": 1779393272874
-  },
-  "colorsync.displayservices": {
-    "pid": 473,
-    "seenAt": 1779392802737
-  },
-  "com.apple.audio.DriverHelper": {
-    "pid": 467,
-    "seenAt": 1779392802737
+    "seenAt": 1779401463257
   },
   "Core Audio Driver (ParrotAudioPlugin.driver)": {
     "pid": 468,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "authd": {
     "pid": 462,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "mDNSResponder": {
     "pid": 450,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "symptomsd": {
     "pid": 443,
-    "seenAt": 1779393272874
-  },
-  "sysextd": {
-    "pid": 440,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "airportd": {
     "pid": 438,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "socketfilterfw": {
     "pid": 436,
-    "seenAt": 1779393272874
-  },
-  "liquiddetectiond": {
-    "pid": 423,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "backupd-helper": {
     "pid": 410,
-    "seenAt": 1779393272874
-  },
-  "cryptexd": {
-    "pid": 432,
-    "seenAt": 1779392802737
-  },
-  "backgroundtaskmanagementd": {
-    "pid": 428,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "biomed": {
     "pid": 426,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "mobileassetd": {
-    "pid": 416,
-    "seenAt": 1779393272874
-  },
-  "hidd": {
-    "pid": 417,
-    "seenAt": 1779392802737
+    "pid": 22079,
+    "seenAt": 1779401463257
   },
   "eligibilityd": {
     "pid": 415,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "apfsd": {
     "pid": 425,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "nehelper": {
     "pid": 422,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "aned": {
     "pid": 427,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "biometrickitd": {
     "pid": 430,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "iconservicesd": {
     "pid": 354,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "locationd": {
     "pid": 372,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "analyticsd": {
     "pid": 409,
-    "seenAt": 1779393272874
-  },
-  "uarpassetmanagerd": {
-    "pid": 335,
-    "seenAt": 1779392802737
+    "seenAt": 1779401463257
   },
   "systemstatusd": {
     "pid": 414,
-    "seenAt": 1779393272874
-  },
-  "trustdFileHelper": {
-    "pid": 413,
-    "seenAt": 1779392802737
+    "seenAt": 1779401463257
   },
   "coreaudiod": {
     "pid": 411,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "PowerUIAgent": {
-    "pid": 412,
-    "seenAt": 1779393272874
-  },
-  "containermanagerd_system": {
-    "pid": 406,
-    "seenAt": 1779393272874
-  },
-  "accessoryupdaterd": {
-    "pid": 334,
-    "seenAt": 1779392912888
+    "pid": 86895,
+    "seenAt": 1779401463257
   },
   "coreservicesd": {
     "pid": 403,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "powerexperienced": {
-    "pid": 402,
-    "seenAt": 1779393272874
-  },
-  "fskitd": {
-    "pid": 401,
-    "seenAt": 1779393272874
+    "pid": 22822,
+    "seenAt": 1779401463257
   },
   "corespeechd_system": {
     "pid": 347,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "timed": {
     "pid": 368,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "usbmuxd": {
     "pid": 369,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "loginwindow": {
     "pid": 400,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "logd_helper": {
-    "pid": 396,
-    "seenAt": 1779393272874
+    "pid": 22714,
+    "seenAt": 1779401463257
   },
   "IOMFB_bics_daemon": {
     "pid": 339,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "coreduetd": {
     "pid": 359,
-    "seenAt": 1779393272874
-  },
-  "endpointsecurityd": {
-    "pid": 337,
-    "seenAt": 1779392802737
+    "seenAt": 1779401463257
   },
   "mediaremoted": {
     "pid": 329,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "com.apple.cmio.registerassistantservice": {
     "pid": 394,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "launchservicesd": {
     "pid": 367,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "usermanagerd": {
     "pid": 387,
-    "seenAt": 1779393272874
-  },
-  "peakpowermanagerd": {
-    "pid": 386,
-    "seenAt": 1779392802737
+    "seenAt": 1779401463257
   },
   "contextstored": {
     "pid": 363,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "nesessionmanager": {
     "pid": 373,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "PerfPowerServices": {
     "pid": 381,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "revisiond": {
     "pid": 384,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "smd": {
     "pid": 325,
-    "seenAt": 1779393272874
-  },
-  "aslmanager": {
-    "pid": 395,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "syslogd": {
     "pid": 360,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "configd": {
     "pid": 336,
-    "seenAt": 1779393272874
-  },
-  "dirhelper": {
-    "pid": 382,
-    "seenAt": 1779392802737
+    "seenAt": 1779401463257
   },
   "corerepaird": {
     "pid": 377,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "autofsd": {
     "pid": 375,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "KernelEventAgent": {
     "pid": 385,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "securityd": {
     "pid": 370,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "apsd": {
     "pid": 366,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "watchdogd": {
     "pid": 349,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "dasd": {
     "pid": 376,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "bluetoothd": {
     "pid": 389,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "kernelmanagerd": {
     "pid": 355,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "sandboxd": {
-    "pid": 391,
-    "seenAt": 1779393272874
+    "pid": 23552,
+    "seenAt": 1779401463257
   },
   "diskarbitrationd": {
     "pid": 356,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "opendirectoryd": {
     "pid": 364,
-    "seenAt": 1779393272874
-  },
-  "amfid": {
-    "pid": 341,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "notifyd": {
     "pid": 390,
-    "seenAt": 1779393272874
-  },
-  "AppleCredentialManagerDaemon": {
-    "pid": 380,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "AirPlayXPCHelper": {
     "pid": 393,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "logind": {
     "pid": 383,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "remoted": {
     "pid": 343,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "thermalmonitord": {
     "pid": 362,
-    "seenAt": 1779393272874
-  },
-  "keybagd": {
-    "pid": 345,
-    "seenAt": 1779393272874
-  },
-  "(lsof)": {
-    "pid": 68319,
-    "seenAt": 1779392767650
+    "seenAt": 1779401463257
   },
   "launchd": {
     "pid": 1,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "ps": {
-    "pid": 73204,
-    "seenAt": 1779393272874
-  },
-  "(docker)": {
-    "pid": 68938,
-    "seenAt": 1779392802737
+    "pid": 31459,
+    "seenAt": 1779401463257
   },
   "npm start": {
-    "pid": 64804,
-    "seenAt": 1779393272874
+    "pid": 30948,
+    "seenAt": 1779401463257
   },
   "esbuild": {
-    "pid": 65856,
-    "seenAt": 1779393272874
+    "pid": 97413,
+    "seenAt": 1779401463257
   },
   "npm run dev": {
-    "pid": 65821,
-    "seenAt": 1779393272874
+    "pid": 97392,
+    "seenAt": 1779401463257
   },
   "Docker Desktop Helper (Renderer)": {
     "pid": 64422,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "Docker Desktop Helper": {
     "pid": 64401,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "Docker Desktop Helper (GPU)": {
     "pid": 64400,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "com.docker.virtualization": {
     "pid": 64383,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "Docker Desktop": {
     "pid": 64377,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "com.docker.build": {
     "pid": 64376,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "com.docker.dev-envs": {
     "pid": 64374,
-    "seenAt": 1779393272874
-  },
-  "(bash)": {
-    "pid": 69259,
-    "seenAt": 1779392852914
+    "seenAt": 1779401463257
   },
   "node watchlog-agent.js": {
-    "pid": 68855,
-    "seenAt": 1779393272874
+    "pid": 30564,
+    "seenAt": 1779401463257
   },
   "MongoDB Compass": {
     "pid": 69074,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "MongoDB Compass Helper (Renderer)": {
     "pid": 69079,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "MongoDB Compass Helper (GPU)": {
     "pid": 69077,
-    "seenAt": 1779393272874
-  },
-  "AXVisualSupportAgent launchd": {
-    "pid": 69063,
-    "seenAt": 1779392852914
-  },
-  "(sysctl)": {
-    "pid": 69283,
-    "seenAt": 1779392852914
-  },
-  "(grep)": {
-    "pid": 69277,
-    "seenAt": 1779392852914
-  },
-  "(netstat)": {
-    "pid": 69276,
-    "seenAt": 1779392852914
+    "seenAt": 1779401463257
   },
   "ping": {
-    "pid": 73195,
-    "seenAt": 1779393272874
+    "pid": 31457,
+    "seenAt": 1779401463257
   },
   "MongoDB Compass Helper": {
     "pid": 69078,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "Terminal": {
     "pid": 69383,
-    "seenAt": 1779393272874
-  },
-  "(ps)": {
-    "pid": 73203,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "nginx": {
     "pid": 69460,
-    "seenAt": 1779393272874
+    "seenAt": 1779401463257
   },
   "ShipIt com.mongodb.compass.ShipIt": {
     "pid": 70498,
-    "seenAt": 1779393272874
-  },
-  "AddressBookManager": {
-    "pid": 71118,
-    "seenAt": 1779393092900
-  },
-  "AddressBookSourceSync": {
-    "pid": 71095,
-    "seenAt": 1779393092900
-  },
-  "ReportMemoryException": {
-    "pid": 71107,
-    "seenAt": 1779393092900
+    "seenAt": 1779401463257
   },
   "com.apple.iCloudHelper": {
-    "pid": 71106,
-    "seenAt": 1779393272874
+    "pid": 23473,
+    "seenAt": 1779401245745
   },
-  "biomesyncd": {
-    "pid": 71094,
-    "seenAt": 1779393092900
+  "trustdFileHelper": {
+    "pid": 22148,
+    "seenAt": 1779401463257
+  },
+  "PowerChime": {
+    "pid": 86894,
+    "seenAt": 1779401463257
+  },
+  "MessagesBlastDoorService": {
+    "pid": 21751,
+    "seenAt": 1779401463257
+  },
+  "mlhostd": {
+    "pid": 22160,
+    "seenAt": 1779401463257
+  },
+  "businessservicesd": {
+    "pid": 21740,
+    "seenAt": 1779401463257
+  },
+  "PM2": {
+    "pid": 87645,
+    "seenAt": 1779401463257
+  },
+  "Activity Monitor": {
+    "pid": 89844,
+    "seenAt": 1779401463257
+  },
+  "(bash)": {
+    "pid": 31441,
+    "seenAt": 1779401463257
+  },
+  "(grep)": {
+    "pid": 31461,
+    "seenAt": 1779401463257
+  },
+  "(netstat)": {
+    "pid": 31458,
+    "seenAt": 1779401463257
+  },
+  "managedcorespotlightd": {
+    "pid": 24976,
+    "seenAt": 1779401463257
+  },
+  "ManagedSettingsAgent": {
+    "pid": 23412,
+    "seenAt": 1779401463257
+  },
+  "modelcatalogd": {
+    "pid": 22101,
+    "seenAt": 1779401463257
+  },
+  "axassetsd": {
+    "pid": 25011,
+    "seenAt": 1779401463257
+  },
+  "parsec-fbf": {
+    "pid": 22178,
+    "seenAt": 1779401005723
+  },
+  "talagentd": {
+    "pid": 13665,
+    "seenAt": 1779401463257
+  },
+  "TextInputSwitcher": {
+    "pid": 13530,
+    "seenAt": 1779401463257
+  },
+  "contentlinkingd": {
+    "pid": 24867,
+    "seenAt": 1779401463257
+  },
+  "com.apple.hiservices-xpcservice": {
+    "pid": 13476,
+    "seenAt": 1779401463257
+  },
+  "siriactionsd": {
+    "pid": 24944,
+    "seenAt": 1779401463257
+  },
+  "liveactivitiesd": {
+    "pid": 14009,
+    "seenAt": 1779401463257
+  },
+  "ShortcutsViewService": {
+    "pid": 14008,
+    "seenAt": 1779401463257
+  },
+  "mobiletimerd": {
+    "pid": 24947,
+    "seenAt": 1779401463257
+  },
+  "proactived": {
+    "pid": 24868,
+    "seenAt": 1779401463257
+  },
+  "remindd": {
+    "pid": 25022,
+    "seenAt": 1779401463257
+  },
+  "amfid": {
+    "pid": 17667,
+    "seenAt": 1779401463257
+  },
+  "TrialArchivingService": {
+    "pid": 22142,
+    "seenAt": 1779401463257
+  },
+  "AssetCacheTetheratorService": {
+    "pid": 22135,
+    "seenAt": 1779401463257
+  },
+  "geodMachServiceBridge": {
+    "pid": 22133,
+    "seenAt": 1779401463257
+  },
+  "com.apple.quicklook.ThumbnailsAgent": {
+    "pid": 22132,
+    "seenAt": 1779401463257
+  },
+  "AssetCache": {
+    "pid": 22131,
+    "seenAt": 1779401463257
+  },
+  "deleted_helper": {
+    "pid": 22128,
+    "seenAt": 1779401463257
+  },
+  "deleted": {
+    "pid": 22110,
+    "seenAt": 1779401463257
+  },
+  "com.apple.MobileSoftwareUpdate.CleanupPreparePathService": {
+    "pid": 22103,
+    "seenAt": 1779401463257
+  },
+  "ReportCrash": {
+    "pid": 22023,
+    "seenAt": 1779401463257
+  },
+  "recentsd": {
+    "pid": 23416,
+    "seenAt": 1779401463257
+  },
+  "mapssyncd": {
+    "pid": 23415,
+    "seenAt": 1779401463257
+  },
+  "liquiddetectiond": {
+    "pid": 23398,
+    "seenAt": 1779401463257
+  },
+  "UsageTrackingAgent": {
+    "pid": 23400,
+    "seenAt": 1779401463257
+  },
+  "keybagd": {
+    "pid": 23397,
+    "seenAt": 1779401463257
+  },
+  "assetsubscriptiond": {
+    "pid": 23551,
+    "seenAt": 1779401463257
+  },
+  "SetStoreUpdateService": {
+    "pid": 23550,
+    "seenAt": 1779401463257
+  },
+  "IMDPersistenceAgent": {
+    "pid": 23549,
+    "seenAt": 1779401463257
+  },
+  "siriknowledged": {
+    "pid": 23530,
+    "seenAt": 1779401463257
+  },
+  "(docker)": {
+    "pid": 30650,
+    "seenAt": 1779401353098
+  },
+  "(lsof)": {
+    "pid": 30652,
+    "seenAt": 1779401353098
+  },
+  "(sysctl)": {
+    "pid": 29031,
+    "seenAt": 1779401125762
+  },
+  "docker stats": {
+    "pid": 31418,
+    "seenAt": 1779401463257
+  },
+  "maild": {
+    "pid": 26446,
+    "seenAt": 1779401463257
+  },
+  "swcd": {
+    "pid": 26445,
+    "seenAt": 1779401463257
+  },
+  "MTLCompilerService": {
+    "pid": 26430,
+    "seenAt": 1779401463257
+  },
+  "dirhelper": {
+    "pid": 26431,
+    "seenAt": 1779401463257
+  },
+  "netstat": {
+    "pid": 27806,
+    "seenAt": 1779400945759
+  },
+  "(ps)": {
+    "pid": 29408,
+    "seenAt": 1779401185723
+  },
+  "ScopedBookmarkAgent": {
+    "pid": 29614,
+    "seenAt": 1779401463257
+  },
+  "photoanalysisd": {
+    "pid": 29613,
+    "seenAt": 1779401463257
+  },
+  "<defunct>": {
+    "pid": 31462,
+    "seenAt": 1779401463257
+  },
+  "homeenergyd": {
+    "pid": 31145,
+    "seenAt": 1779401463257
   }
 }

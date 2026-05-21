@@ -1,7 +1,7 @@
 [
     {
         "service": "docker",
-        "monitor": false,
+        "monitor": true,
         "autoDetected": true,
         "state": "enabled",
         "recommended": true
@@ -26,7 +26,7 @@
         "recommended": true
     },
     {
-        "monitor": false,
+        "monitor": true,
         "service": "nginx",
         "accessLog": "/var/log/nginx/access.log",
         "autoDetected": true,
@@ -68,5 +68,12 @@
             "mrs": true,
             "deployments": true
         }
+    },
+    {
+        "service": "pm2",
+        "monitor": false,
+        "autoDetected": true,
+        "recommended": true,
+        "state": "detected_needs_config"
     }
 ]
