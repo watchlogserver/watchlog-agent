@@ -15,6 +15,7 @@ const gitlabIntegration = require('./integrations/gitlab/index')
 const postgresIntegration = require('./integrations/postgresql');
 const mysqlIntegration = require('./integrations/mysql');
 const { collectAndEmitMetrics } = require('./collectAndEmitMetrics');
+const { runDiscovery, collectProcessSnapshot } = require('./discovery/index');
 const zlib = require('zlib');
 
 const logagent = require('./log-agent')
@@ -26,6 +27,54 @@ module.exports = class Application {
     }
     async startApp() {
         this.runAgent()
+        this.startDiscovery()
+    }
+
+    async startDiscovery() {
+        // Run initial full discovery after a short delay so socket can connect first
+        setTimeout(async () => {
+            try {
+                const snapshot = await runDiscovery({ syncConfig: true });
+                this.emitDiscoverySnapshot(snapshot);
+            } catch (err) {
+                console.error('[discovery] Initial scan failed:', err.message);
+            }
+        }, 10000);
+
+        // Periodic process snapshot every 60 seconds
+        setInterval(async () => {
+            try {
+                const procSnapshot = await collectProcessSnapshot();
+                emitWhenConnected('process_snapshot', {
+                    apiKey: process.env.WATCHLOG_APIKEY,
+                    uuid: process.env.UUID,
+                    type: 'process_snapshot',
+                    ...procSnapshot
+                });
+            } catch (err) {
+                console.error('[discovery] Process snapshot error:', err.message);
+            }
+        }, 60000);
+    }
+
+    emitDiscoverySnapshot(snapshot) {
+        emitWhenConnected('discovery_snapshot', {
+            apiKey: process.env.WATCHLOG_APIKEY,
+            uuid: process.env.UUID,
+            type: 'discovery_snapshot',
+            runtime: snapshot.runtime,
+            scannedAt: snapshot.scannedAt,
+            services: snapshot.services,
+            logs: snapshot.logs,
+            processes: {
+                topCpu: snapshot.processes.topCpu,
+                topMemory: snapshot.processes.topMemory,
+                restarts: snapshot.processes.restarts,
+                total: snapshot.processes.total
+            },
+            ports: snapshot.ports,
+            docker: snapshot.docker
+        });
     }
 
     runAgent() {

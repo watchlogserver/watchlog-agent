@@ -1,25 +1,37 @@
 [
     {
         "service": "docker",
-        "monitor": false
+        "monitor": false,
+        "autoDetected": true,
+        "state": "enabled",
+        "recommended": true
     },
     {
         "service": "mongodb",
         "monitor": false,
         "username": "",
-        "password": ""
+        "password": "",
+        "autoDetected": true,
+        "state": "detected_needs_config",
+        "recommended": true
     },
     {
         "service": "redis",
         "monitor": false,
         "host": "127.0.0.1",
         "port": "6379",
-        "password": ""
+        "password": "",
+        "autoDetected": true,
+        "state": "detected_needs_config",
+        "recommended": true
     },
     {
         "monitor": false,
-        "service" : "nginx",
-        "accessLog" : "/var/log/nginx/access.log"
+        "service": "nginx",
+        "accessLog": "/var/log/nginx/access.log",
+        "autoDetected": true,
+        "state": "enabled",
+        "recommended": false
     },
     {
         "service": "postgresql",
@@ -28,7 +40,10 @@
         "port": "5432",
         "username": "",
         "password": "",
-        "database": []
+        "database": [],
+        "autoDetected": true,
+        "state": "detected_needs_config",
+        "recommended": true
     },
     {
         "service": "mysql",
@@ -40,12 +55,18 @@
         "database": []
     },
     {
-    "service": "gitlab",
-    "monitor": false,
-    "baseUrl": "https://gitlab.com",
-    "token": "",
-    "projects": [],
-    "monitorLogs": true,
-    "metrics": {"pipelines": true, "jobs": true, "runners": true, "mrs": true, "deployments": true}
+        "service": "gitlab",
+        "monitor": false,
+        "baseUrl": "https://gitlab.com",
+        "token": "",
+        "projects": [],
+        "monitorLogs": true,
+        "metrics": {
+            "pipelines": true,
+            "jobs": true,
+            "runners": true,
+            "mrs": true,
+            "deployments": true
+        }
     }
 ]
