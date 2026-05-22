@@ -2,7 +2,8 @@ const si = require('systeminformation');
 const os = require('os');
 const { detectRuntime } = require('./helpers');
 const path = require('path');
-const fs = require('fs');
+const { readJsonSafe, writeJsonAtomic, truncateStr,
+        RETENTION_MS, MAX_PROCESS_ENTRIES, MAX_COMMAND_LENGTH } = require('../state/stateUtils');
 
 const STATE_DIR = path.join(__dirname, '../../state');
 const PROCESS_HISTORY_FILE = path.join(STATE_DIR, 'process-history.json');
@@ -33,22 +34,22 @@ const IMPORTANT_RUNTIMES = new Set([
 ]);
 
 const RESTART_THRESHOLD = 3;           // restarts needed to trigger a warning
-const RESTART_WINDOW_MS = 15 * 60 * 1000; // within 15 minutes
+const RESTART_WINDOW_MS = RETENTION_MS; // within 15 minutes (shared with state retention)
 
 function loadProcessHistory() {
-    try {
-        if (fs.existsSync(PROCESS_HISTORY_FILE)) {
-            return JSON.parse(fs.readFileSync(PROCESS_HISTORY_FILE, 'utf8'));
-        }
-    } catch {}
-    return {};
+    return readJsonSafe(PROCESS_HISTORY_FILE, {});
 }
 
 function saveProcessHistory(history) {
-    try {
-        if (!fs.existsSync(STATE_DIR)) fs.mkdirSync(STATE_DIR, { recursive: true });
-        fs.writeFileSync(PROCESS_HISTORY_FILE, JSON.stringify(history, null, 2), 'utf8');
-    } catch {}
+    // Enforce max entries by evicting oldest-seenAt entries
+    const keys = Object.keys(history);
+    if (keys.length > MAX_PROCESS_ENTRIES) {
+        keys.sort((a, b) => (history[a].seenAt || 0) - (history[b].seenAt || 0));
+        for (const k of keys.slice(0, keys.length - MAX_PROCESS_ENTRIES)) {
+            delete history[k];
+        }
+    }
+    writeJsonAtomic(PROCESS_HISTORY_FILE, history);
 }
 
 function isNoisy(name, command) {
@@ -84,7 +85,7 @@ function detectRestarts(current, history) {
     const windowStart = now - RESTART_WINDOW_MS;
 
     for (const proc of current) {
-        const key = proc.command;
+        const key = truncateStr(proc.command, MAX_COMMAND_LENGTH);
         if (!key) continue;
 
         const prev = history[key];

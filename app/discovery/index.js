@@ -4,26 +4,47 @@ const { detectLogs } = require('./detectLogs');
 const { detectDocker } = require('./detectDocker');
 const { detectServices } = require('./detectServices');
 const { syncConfigs } = require('./autoConfig');
-const fs = require('fs');
 const path = require('path');
+const { readJsonSafe, writeJsonAtomic, truncateStr,
+        MAX_DISCOVERY_LOGS, MAX_PATH_LENGTH, MAX_COMMAND_LENGTH } = require('../state/stateUtils');
 
 const STATE_DIR = path.join(__dirname, '../../state');
 const CACHE_FILE = path.join(STATE_DIR, 'discovery-cache.json');
 
 function saveCache(snapshot) {
-    try {
-        if (!fs.existsSync(STATE_DIR)) fs.mkdirSync(STATE_DIR, { recursive: true });
-        fs.writeFileSync(CACHE_FILE, JSON.stringify(snapshot, null, 2), 'utf8');
-    } catch {}
+    // Omit processes.all (can be 500+ entries / hundreds of KB)
+    // Trim logs list and truncate long strings to keep cache compact
+    const trimmedLogs = (snapshot.logs || [])
+        .slice(0, MAX_DISCOVERY_LOGS)
+        .map(l => ({ ...l, path: truncateStr(l.path, MAX_PATH_LENGTH) }));
+
+    const trimmedProcesses = {
+        topCpu: (snapshot.processes?.topCpu || []).map(p => ({
+            ...p,
+            command: truncateStr(p.command, MAX_COMMAND_LENGTH)
+        })),
+        topMemory: (snapshot.processes?.topMemory || []).map(p => ({
+            ...p,
+            command: truncateStr(p.command, MAX_COMMAND_LENGTH)
+        })),
+        restarts: snapshot.processes?.restarts || [],
+        restartWarnings: snapshot.processes?.restartWarnings || [],
+        restartEvents: snapshot.processes?.restartEvents || [],
+        total: snapshot.processes?.total || 0
+        // processes.all intentionally excluded — too large for cache
+    };
+
+    const compact = {
+        ...snapshot,
+        logs: trimmedLogs,
+        processes: trimmedProcesses,
+    };
+
+    writeJsonAtomic(CACHE_FILE, compact);
 }
 
 function loadCache() {
-    try {
-        if (fs.existsSync(CACHE_FILE)) {
-            return JSON.parse(fs.readFileSync(CACHE_FILE, 'utf8'));
-        }
-    } catch {}
-    return null;
+    return readJsonSafe(CACHE_FILE, null);
 }
 
 async function runDiscovery({ syncConfig = true } = {}) {
