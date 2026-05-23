@@ -1,7 +1,8 @@
 const si = require('systeminformation');
 const os = require('os');
-const { detectRuntime } = require('./helpers');
+const fs = require('fs');
 const path = require('path');
+const { detectRuntime } = require('./helpers');
 const { readJsonSafe, writeJsonAtomic, truncateStr,
         RETENTION_MS, MAX_PROCESS_ENTRIES, MAX_COMMAND_LENGTH } = require('../state/stateUtils');
 
@@ -35,6 +36,111 @@ const IMPORTANT_RUNTIMES = new Set([
 
 const RESTART_THRESHOLD = 3;           // restarts needed to trigger a warning
 const RESTART_WINDOW_MS = RETENTION_MS; // within 15 minutes (shared with state retention)
+
+// ===== Command sanitization =====
+
+const SECRET_INLINE_RE = /(\b(?:password|passwd|token|secret|api[-_]?key|auth(?:orization)?|credential|private[-_]?key|access[-_]?key|database[-_]?url|mongo(?:db)?[-_]?uri|redis[-_]?url|postgres(?:ql)?[-_]?(?:url|password)|mysql[-_]?password|connection[-_]?string))\s*[=:]\s*\S+/gi;
+const SECRET_CONNSTR_RE = /\/\/[^:@\s/]+:[^@\s/]+@/g;
+
+function sanitizeCommand(cmd) {
+    if (!cmd || typeof cmd !== 'string') return '';
+    let s = cmd;
+    s = s.replace(SECRET_INLINE_RE, (m, key) => `${key}=[REDACTED]`);
+    s = s.replace(SECRET_CONNSTR_RE, '//[REDACTED]@');
+    return s.slice(0, MAX_COMMAND_LENGTH);
+}
+
+// ===== /proc filesystem helpers (Linux only) =====
+
+function readProcLink(pid, link) {
+    try {
+        return fs.readlinkSync(`/proc/${pid}/${link}`);
+    } catch {
+        return null;
+    }
+}
+
+// ===== Service guessing =====
+
+const RUNTIME_SERVICE_MAP = {
+    nginx: 'nginx',
+    redis: 'redis',
+    postgresql: 'postgresql',
+    mysql: 'mysql',
+    mongodb: 'mongodb',
+    docker: 'docker',
+};
+
+function guessService(name, cmd, cwd, runtime, parentRuntime) {
+    if (RUNTIME_SERVICE_MAP[runtime]) return RUNTIME_SERVICE_MAP[runtime];
+
+    const n = (name || '').toLowerCase();
+    const c = (cmd || '').toLowerCase();
+
+    // PM2-managed: extract app name from --name flag or entry file
+    if (runtime === 'pm2' || parentRuntime === 'pm2' || c.includes('pm2')) {
+        const nameFlag = c.match(/--name\s+(\S+)/);
+        if (nameFlag) return nameFlag[1];
+        const entryFile = c.match(/node\s+(\S+\.js)/);
+        if (entryFile) return path.basename(entryFile[1], '.js');
+    }
+
+    // Node.js: use cwd directory name
+    if (runtime === 'nodejs' && cwd) {
+        const dir = path.basename(cwd);
+        if (dir && dir !== '/' && dir !== '.' && !/^\d+$/.test(dir)) return `node-${dir}`;
+    }
+
+    // Python: use cwd directory name
+    if (runtime === 'python' && cwd) {
+        const dir = path.basename(cwd);
+        if (dir && dir !== '/' && dir !== '.') return `python-${dir}`;
+    }
+
+    // Java: extract jar name from command
+    if (runtime === 'java') {
+        const jar = c.match(/(\S+\.jar)/);
+        if (jar) return path.basename(jar[1], '.jar');
+    }
+
+    // PHP: use cwd directory name
+    if (runtime === 'php' && cwd) {
+        const dir = path.basename(cwd);
+        if (dir && dir !== '/' && dir !== '.') return `php-${dir}`;
+    }
+
+    return null;
+}
+
+// ===== Enrich a single top process with cwd, exe, parent, serviceGuess =====
+
+function enrichProcess(p, pidMap) {
+    // Parent info
+    const parentProc = p.ppid ? pidMap.get(p.ppid) : null;
+    const parent = parentProc
+        ? { pid: parentProc.pid, name: parentProc.name, runtime: parentProc.runtime || null }
+        : null;
+
+    // Linux-only: cwd and executablePath via /proc
+    let cwd = null;
+    let executablePath = null;
+    if (process.platform === 'linux' && p.pid) {
+        cwd = readProcLink(p.pid, 'cwd');
+        executablePath = readProcLink(p.pid, 'exe');
+    }
+
+    const commandSanitized = sanitizeCommand(p.command);
+    const serviceGuess = guessService(p.name, p.command, cwd, p.runtime, parent?.runtime);
+
+    return {
+        ...p,
+        commandSanitized,
+        cwd,
+        executablePath,
+        parent,
+        serviceGuess,
+    };
+}
 
 function loadProcessHistory() {
     return readJsonSafe(PROCESS_HISTORY_FILE, {});
@@ -100,6 +206,8 @@ function detectRestarts(current, history) {
             events.push({
                 name: proc.name,
                 command: proc.command,
+                commandSanitized: proc.commandSanitized || sanitizeCommand(proc.command),
+                serviceGuess: proc.serviceGuess || null,
                 previousPid: prev.pid,
                 currentPid: proc.pid,
                 detectedAt: new Date(now).toISOString(),
@@ -167,18 +275,30 @@ async function detectProcesses() {
             });
         }
 
+        // Build pid→process map for parent resolution
+        const pidMap = new Map(processList.map(p => [p.pid, p]));
+
         // Sort by CPU to get top consumers
-        const topCpu = [...processList]
+        const topCpuRaw = [...processList]
             .sort((a, b) => b.cpu - a.cpu)
             .slice(0, 10);
 
-        const topMemory = [...processList]
+        const topMemoryRaw = [...processList]
             .sort((a, b) => b.memory - a.memory)
             .slice(0, 10);
 
+        // Enrich top processes with cwd, exe, parent, serviceGuess, commandSanitized
+        const topCpu = topCpuRaw.map(p => enrichProcess(p, pidMap));
+        const topMemory = topMemoryRaw.map(p => enrichProcess(p, pidMap));
+
         // Detect restarts with noise filtering and threshold logic
+        // Pass enriched list so restart events include commandSanitized/serviceGuess
+        const enrichedAll = processList.map(p => ({
+            ...p,
+            commandSanitized: sanitizeCommand(p.command),
+        }));
         const history = loadProcessHistory();
-        const { events: restartEvents, warnings: restartWarnings } = detectRestarts(processList, history);
+        const { events: restartEvents, warnings: restartWarnings } = detectRestarts(enrichedAll, history);
         saveProcessHistory(history);
 
         return {
@@ -196,4 +316,4 @@ async function detectProcesses() {
     }
 }
 
-module.exports = { detectProcesses };
+module.exports = { detectProcesses, sanitizeCommand };
