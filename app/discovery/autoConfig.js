@@ -78,8 +78,12 @@ function syncIntegrations(discoveredServices) {
     return integrations;
 }
 
-// Merge discovered logs into log-watchlist.json without removing user entries
+// Merge discovered logs into log-watchlist.json without removing user entries.
+// Discovery never auto-enables logs — only the user may enable them.
+// Set WATCHLOG_AUTO_ENABLE_RECOMMENDED_LOGS=true to opt into the old behavior.
 function syncLogWatchlist(discoveredLogs) {
+    const autoEnable = process.env.WATCHLOG_AUTO_ENABLE_RECOMMENDED_LOGS === 'true';
+
     let watchlist = loadJson(LOG_WATCHLIST_FILE, { logs: [] });
     if (!watchlist.logs) watchlist.logs = [];
 
@@ -95,13 +99,13 @@ function syncLogWatchlist(discoveredLogs) {
             path: log.path,
             service: log.service,
             format: log.format || 'auto',
-            enabled: true,
+            enabled: autoEnable,
             autoDetected: true,
             recommended: log.recommended
         });
         existingPaths.add(log.path);
         changed = true;
-        console.log(`[discovery] Added log to log-watchlist.json: ${log.path}`);
+        console.log(`[discovery] Added log to log-watchlist.json: ${log.path} (enabled: ${autoEnable})`);
     }
 
     if (changed) {
