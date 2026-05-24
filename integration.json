@@ -1,14 +1,14 @@
 [
     {
         "service": "docker",
-        "monitor": true,
+        "monitor": false,
         "autoDetected": true,
         "state": "enabled",
         "recommended": true
     },
     {
         "service": "mongodb",
-        "monitor": true,
+        "monitor": false,
         "username": "",
         "password": "",
         "autoDetected": true,
@@ -17,7 +17,7 @@
     },
     {
         "service": "redis",
-        "monitor": true,
+        "monitor": false,
         "host": "127.0.0.1",
         "port": "6379",
         "password": "",
@@ -26,7 +26,7 @@
         "recommended": true
     },
     {
-        "monitor": true,
+        "monitor": false,
         "service": "nginx",
         "accessLog": "/var/log/nginx/access.log",
         "autoDetected": true,
@@ -71,7 +71,7 @@
     },
     {
         "service": "pm2",
-        "monitor": true,
+        "monitor": false,
         "autoDetected": true,
         "recommended": true,
         "state": "enabled"

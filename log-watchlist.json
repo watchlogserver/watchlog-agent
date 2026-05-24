@@ -1,40 +1,5 @@
 {
     "logs": [
-        {
-            "name": "PM2: server-agent error",
-            "path": "/Users/mohammad/.pm2/logs/server-agent-error.log",
-            "service": "pm2",
-            "format": "auto",
-            "enabled": true,
-            "autoDetected": true,
-            "recommended": true
-        },
-        {
-            "name": "PM2: server-agent out",
-            "path": "/Users/mohammad/.pm2/logs/server-agent-out.log",
-            "service": "pm2",
-            "format": "auto",
-            "enabled": true,
-            "autoDetected": true,
-            "recommended": true
-        },
-        {
-            "name": "PM2: index out",
-            "path": "/Users/mohammad/.pm2/logs/index-out.log",
-            "service": "pm2",
-            "format": "auto",
-            "enabled": true,
-            "autoDetected": true,
-            "recommended": true
-        },
-        {
-            "name": "PM2: index error",
-            "path": "/Users/mohammad/.pm2/logs/index-error.log",
-            "service": "pm2",
-            "format": "auto",
-            "enabled": true,
-            "autoDetected": true,
-            "recommended": true
-        }
+        
     ]
 }
