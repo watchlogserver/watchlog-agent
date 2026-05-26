@@ -41,6 +41,7 @@ function processLogLine(line) {
     const match = line.match(logRegex);
     if (!match) return;
   
+    const ip = match[1];
     const method = match[3];
     const rawUrl = match[4];
     const fullUrl = match[5];
@@ -69,10 +70,12 @@ function processLogLine(line) {
     if (!path) return;
   
     logBuffer.push({
+      ip,
       method,
       path : normalizedPath,
       status,
       origin,
+      referrer: rawReferer && rawReferer !== '-' ? rawReferer : null,
       userAgent,
       requestTime,
       upstreamTime,
@@ -111,9 +114,16 @@ function flushLogBuffer() {
     const elasticPayload = logBuffer.map(log => ({
         timestamp: new Date().toISOString(),
         origin: log.origin,
+        ip: log.ip,
         method: log.method,
         url: log.path,
         statusCode: log.status,
+        referrer: log.referrer,
+        userAgent: log.userAgent,
+        requestTime: log.requestTime,
+        upstreamTime: log.upstreamTime,
+        sslProtocol: log.sslProtocol,
+        sslCipher: log.sslCipher,
         raw: log.raw
     }));
 
