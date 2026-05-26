@@ -61,6 +61,8 @@ exports.getData = function (callback) {
                                     created: container.created,
                                     started: container.started,
                                     state: container.state,
+                                    health: container.health || container.healthStatus || null,
+                                    healthStatus: container.health || container.healthStatus || null,
                                     restartCount: container.restartCount,
                                     ports: Array.isArray(container.ports) && container.ports.length > 0 ? container.ports : [],
                                     mounts: Array.isArray(container.mounts) && container.mounts.length > 0 ? container.mounts : [],
@@ -123,5 +125,4 @@ exports.getData = function (callback) {
 }
 
 // sudo chmod 666 /var/run/docker.sock
-
 
