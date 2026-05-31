@@ -1,3 +1,10 @@
+## [1.1.1](https://github.com/watchlogserver/watchlog-agent/compare/1.1.0...1.1.1) (2026-05-31)
+
+
+### Bug Fixes
+
+* handle suspend account ([332afcd](https://github.com/watchlogserver/watchlog-agent/commit/332afcd3cff454f9c397c37b5cd00725485d32ef))
+
 # [1.1.0](https://github.com/watchlogserver/watchlog-agent/compare/1.0.5...1.1.0) (2025-11-26)
 
 
