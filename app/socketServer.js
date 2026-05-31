@@ -41,6 +41,9 @@ const watchlogServerSocket = ioServer(watchlog_server, {
     reconnection: true
 });
 
+let isSuspended = false;
+let suspendedReconnectTimer = null;
+
 // 2) در یک IIFE اطلاعات را async بگیرید، auth را ست کنید و وصل شوید:
 ; (async function initSocket() {
     try {
@@ -80,17 +83,45 @@ const watchlogServerSocket = ioServer(watchlog_server, {
     }
 })();
 
-// ۳) لاگ خطاها
+// ۳) لاگ خطاها و مدیریت تعلیق حساب
 watchlogServerSocket.on('error', err => console.error('client error:', err));
 watchlogServerSocket.on('connect_error', err => console.error('connect failed:', err.message));
 
-// ۴) helper برای emit ایمن
+watchlogServerSocket.on('connect', () => {
+    isSuspended = false;
+    if (suspendedReconnectTimer) {
+        clearTimeout(suspendedReconnectTimer);
+        suspendedReconnectTimer = null;
+    }
+});
+
+watchlogServerSocket.on('account_suspended', () => {
+    if (!isSuspended) {
+        isSuspended = true;
+        console.log('[Watchlog] Account suspended due to unpaid invoices. Data ingestion is paused. Retrying in 15 minutes.');
+    }
+    watchlogServerSocket.disconnect();
+    suspendedReconnectTimer = setTimeout(() => {
+        suspendedReconnectTimer = null;
+        watchlogServerSocket.connect();
+    }, 15 * 60 * 1000);
+});
+
+watchlogServerSocket.on('account_active', () => {
+    isSuspended = false;
+    console.log('[Watchlog] Account reactivated. Data ingestion resumed.');
+});
+
+// ۴) helper برای emit ایمن (با بررسی وضعیت تعلیق)
 function emitWhenConnected(event, payload) {
+    if (isSuspended) return;
     if (watchlogServerSocket.connected) {
         watchlogServerSocket.emit(event, payload);
     } else {
         watchlogServerSocket.once('connect', () => {
-            watchlogServerSocket.emit(event, payload);
+            if (!isSuspended) {
+                watchlogServerSocket.emit(event, payload);
+            }
         });
     }
 }
