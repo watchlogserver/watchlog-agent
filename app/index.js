@@ -1,5 +1,5 @@
 const port = 3774
-const { emitWhenConnected } = require('./socketServer');
+const { emitWhenConnected, sendHeartbeat } = require('./socketServer');
 
 const express = require('express')
 const app = express()
@@ -119,6 +119,9 @@ module.exports = class Application {
         // 7) تایمرها
         setInterval(this.collectMetrics, 60000);
         setInterval(() => collectAndEmitMetrics(), 60000);
+        // Heartbeat: keeps lastSeenAt fresh so checkHostStatus never flips this host offline
+        // while it is actively connected. Interval is shorter than the 120s offline threshold.
+        setInterval(sendHeartbeat, 25000);
       }
       
 

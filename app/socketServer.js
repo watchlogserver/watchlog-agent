@@ -85,7 +85,7 @@ let suspendedReconnectTimer = null;
 
 // ۳) لاگ خطاها و مدیریت تعلیق حساب
 watchlogServerSocket.on('error', err => console.error('client error:', err));
-watchlogServerSocket.on('connect_error', err => console.error('connect failed:', err.message));
+watchlogServerSocket.on('connect_error', err => console.error('[watchlog] connect failed:', err.message));
 
 watchlogServerSocket.on('connect', () => {
     isSuspended = false;
@@ -93,6 +93,23 @@ watchlogServerSocket.on('connect', () => {
         clearTimeout(suspendedReconnectTimer);
         suspendedReconnectTimer = null;
     }
+    console.log(`[watchlog] Connected to server. socketId=${watchlogServerSocket.id}`);
+});
+
+watchlogServerSocket.on('disconnect', (reason) => {
+    console.log(`[watchlog] Disconnected. reason=${reason} — will reconnect automatically`);
+});
+
+watchlogServerSocket.io.on('reconnect_attempt', (attempt) => {
+    console.log(`[watchlog] Reconnect attempt #${attempt}`);
+});
+
+watchlogServerSocket.io.on('reconnect', (attempt) => {
+    console.log(`[watchlog] Reconnected after ${attempt} attempt(s). newSocketId=${watchlogServerSocket.id}`);
+});
+
+watchlogServerSocket.io.on('reconnect_failed', () => {
+    console.error('[watchlog] All reconnect attempts failed.');
 });
 
 watchlogServerSocket.on('account_suspended', () => {
@@ -126,7 +143,17 @@ function emitWhenConnected(event, payload) {
     }
 }
 
+// Heartbeat: proves the host is alive independently of metric batches.
+// Called every 25 seconds by the agent; server updates lastSeenAt on receipt.
+function sendHeartbeat() {
+    if (isSuspended) return;
+    if (watchlogServerSocket.connected) {
+        watchlogServerSocket.emit('heartbeat');
+    }
+}
+
 module.exports = {
     socket: watchlogServerSocket,
-    emitWhenConnected
+    emitWhenConnected,
+    sendHeartbeat,
 };
