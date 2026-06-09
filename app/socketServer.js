@@ -4,6 +4,7 @@ const ioServer = require('socket.io-client');
 const os = require('os');
 const fs = require('fs');
 const path = require('path');
+const offlineQueue = require('./offlineQueue');
 
 const watchlog_server = process.env.WATCHLOG_SERVER;
 const apiKey = process.env.WATCHLOG_APIKEY;
@@ -43,6 +44,11 @@ const watchlogServerSocket = ioServer(watchlog_server, {
 
 let isSuspended = false;
 let suspendedReconnectTimer = null;
+let flushTimer = null;
+
+// Load persisted queue at startup; expired items removed before any flush
+offlineQueue.loadFromDisk();
+offlineQueue.removeExpired();
 
 // 2) در یک IIFE اطلاعات را async بگیرید، auth را ست کنید و وصل شوید:
 ; (async function initSocket() {
@@ -94,10 +100,15 @@ watchlogServerSocket.on('connect', () => {
         suspendedReconnectTimer = null;
     }
     console.log(`[watchlog] Connected to server. socketId=${watchlogServerSocket.id}`);
+    if (offlineQueue.ENABLED && !offlineQueue.isEmpty()) {
+        console.log(`[offline-queue] Connection established. Scheduling flush of ${offlineQueue.size()} queued items`);
+        scheduleFlush();
+    }
 });
 
 watchlogServerSocket.on('disconnect', (reason) => {
     console.log(`[watchlog] Disconnected. reason=${reason} — will reconnect automatically`);
+    cancelFlush();
 });
 
 watchlogServerSocket.io.on('reconnect_attempt', (attempt) => {
@@ -134,12 +145,72 @@ function emitWhenConnected(event, payload) {
     if (isSuspended) return;
     if (watchlogServerSocket.connected) {
         watchlogServerSocket.emit(event, payload);
+    } else if (offlineQueue.ENABLED && offlineQueue.isBufferable(event)) {
+        // Persist bufferable data locally; flush loop will send it after reconnect
+        offlineQueue.enqueue(event, payload);
     } else {
+        // Non-bufferable events: fire once on next reconnect (best-effort, no persistence)
         watchlogServerSocket.once('connect', () => {
             if (!isSuspended) {
                 watchlogServerSocket.emit(event, payload);
             }
         });
+    }
+}
+
+// ── offline queue flush loop ───────────────────────────────────────────────────
+
+async function flushOnce() {
+    if (!offlineQueue.ENABLED || offlineQueue.isEmpty() || isSuspended || !watchlogServerSocket.connected) return;
+
+    const batch = offlineQueue.peekBatch();
+    if (batch.length === 0) return;
+
+    const batchId = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+    console.log(`[offline-queue] Flushing batch of ${batch.length} items (batchId=${batchId})`);
+
+    await new Promise((resolve) => {
+        const timeout = setTimeout(() => {
+            console.log(`[offline-queue] Batch ${batchId} timed out — marking failed`);
+            offlineQueue.markFailed(batch.map(i => i.id));
+            resolve();
+        }, 30000);
+
+        watchlogServerSocket.emit('agent:queued_batch', { batchId, items: batch }, (ack) => {
+            clearTimeout(timeout);
+            if (!ack) {
+                offlineQueue.markFailed(batch.map(i => i.id));
+            } else {
+                if (ack.acknowledgedIds && ack.acknowledgedIds.length > 0) {
+                    offlineQueue.acknowledge(ack.acknowledgedIds);
+                }
+                if (ack.failedIds && ack.failedIds.length > 0) {
+                    offlineQueue.markFailed(ack.failedIds);
+                }
+                if (ack.retryAfterMs) {
+                    console.log(`[offline-queue] Server requested retry after ${ack.retryAfterMs}ms`);
+                }
+            }
+            resolve();
+        });
+    });
+}
+
+function scheduleFlush() {
+    if (flushTimer || !offlineQueue.ENABLED) return;
+    flushTimer = setTimeout(async () => {
+        flushTimer = null;
+        await flushOnce();
+        if (!offlineQueue.isEmpty() && watchlogServerSocket.connected && !isSuspended) {
+            scheduleFlush();
+        }
+    }, offlineQueue.FLUSH_INTERVAL_MS);
+}
+
+function cancelFlush() {
+    if (flushTimer) {
+        clearTimeout(flushTimer);
+        flushTimer = null;
     }
 }
 
