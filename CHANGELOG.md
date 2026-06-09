@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/watchlogserver/watchlog-agent/compare/1.1.1...1.2.0) (2026-06-09)
+
+
+### Features
+
+* send metric in offline mode ([5032916](https://github.com/watchlogserver/watchlog-agent/commit/50329160a8448d13ad71dd9a9caa628e7e33720f))
+
 ## [1.1.1](https://github.com/watchlogserver/watchlog-agent/compare/1.1.0...1.1.1) (2026-05-31)
 
 
