@@ -1,23 +1,43 @@
 [
     {
         "service": "docker",
-        "monitor": true,
+        "monitor": false,
         "autoDetected": true,
         "state": "enabled",
         "recommended": true
     },
     {
         "service": "mongodb",
-        "monitor": true,
+        "monitor": false,
+        "host": "localhost",
+        "port": "27017",
         "username": "",
         "password": "",
+        "authDatabase": "admin",
+        "tls": false,
         "autoDetected": true,
         "state": "enabled",
-        "recommended": true
+        "recommended": true,
+        "advanced": {
+            "enabled": true,
+            "storage": true,
+            "indexes": true,
+            "replication": true,
+            "maxDatabases": 50,
+            "maxCollectionsPerDatabase": 100,
+            "maxCollections": 300,
+            "storageIntervalSeconds": 300,
+            "indexIntervalSeconds": 300
+        },
+        "slowQuery": {
+            "enabled": true,
+            "threshold": 100,
+            "maxPerCollection": 10
+        }
     },
     {
         "service": "redis",
-        "monitor": true,
+        "monitor": false,
         "host": "127.0.0.1",
         "port": "6379",
         "password": "",
@@ -26,7 +46,7 @@
         "recommended": true
     },
     {
-        "monitor": true,
+        "monitor": false,
         "service": "nginx",
         "accessLog": "/var/log/nginx/access.log",
         "autoDetected": true,

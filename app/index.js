@@ -9,6 +9,7 @@ const configFilePath = path.join(__dirname, './../.env');
 const integrations = require("./../integration.json")
 const dockerIntegration = require('./integrations/docker')
 const mongoIntegration = require('./integrations/mongo')
+const mongodbCollector = require('./integrations/mongodb/index')
 const redisIntegration = require('./integrations/redis')
 const nginxIntegration = require('./integrations/nginx')
 const gitlabIntegration = require('./integrations/gitlab/index')
@@ -719,12 +720,33 @@ module.exports = class Application {
                     let password = integrate.password || ""
                     let mongoPort = integrate.port || "27017"
                     let mongoHost = integrate.host || "localhost"
-                    mongoIntegration.getData(mongoHost, mongoPort, username, password, (result, err) => {
-                        if (result) {
+
+                    // One shell round-trip produces both payloads. The legacy
+                    // event is emitted byte-for-byte as before so existing
+                    // dashboards keep working; the advanced event is additive.
+                    mongodbCollector.collect(integrate, (err, result) => {
+                        if (!err && result) {
                             emitWhenConnected("integrations/mongodbservice", {
-                                data: result
+                                data: result.basic
                             })
+                            if (result.advanced) {
+                                emitWhenConnected("integrations/mongodb.advanced", {
+                                    data: result.advanced
+                                })
+                            }
+                            return
                         }
+
+                        // Fall back to the original collector so an agent that
+                        // cannot run the advanced script still reports health.
+                        console.error("MongoDB advanced collector failed, falling back:", err && err.message);
+                        mongoIntegration.getData(mongoHost, mongoPort, username, password, (legacy) => {
+                            if (legacy) {
+                                emitWhenConnected("integrations/mongodbservice", {
+                                    data: legacy
+                                })
+                            }
+                        })
                     })
                 }
             }
