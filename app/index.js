@@ -15,6 +15,7 @@ const redisCollector = require('./integrations/redis/index')
 const nginxIntegration = require('./integrations/nginx')
 const gitlabIntegration = require('./integrations/gitlab/index')
 const postgresIntegration = require('./integrations/postgresql');
+const postgresCollector = require('./integrations/postgresql/index');
 const mysqlIntegration = require('./integrations/mysql');
 const mysqlCollector = require('./integrations/mysql/index');
 const { collectAndEmitMetrics } = require('./collectAndEmitMetrics');
@@ -757,17 +758,39 @@ module.exports = class Application {
         }
         try {
             for (let integrate of integrations) {
-                if (integrate.service === 'postgresql' && integrate.monitor === true && integrate.database && integrate.database.length > 0) {
+                if (integrate.service === 'postgresql' && integrate.monitor === true) {
                     let username = integrate.username || "";
                     let password = integrate.password || "";
                     let port = integrate.port || "5432";
                     let host = integrate.host || "localhost";
                     let databases = Array.isArray(integrate.database) ? integrate.database : [integrate.database];
 
-                    postgresIntegration.getData(host, port, username, password, databases, (result) => {
-                        if (result) {
+                    // One collection pass produces both payloads. The legacy
+                    // event is emitted byte-for-byte as before so existing
+                    // dashboards keep working; the advanced event is additive.
+                    postgresCollector.collect(integrate, (err, result) => {
+                        if (!err && result) {
                             emitWhenConnected("integrations/postgresqlservice", {
-                                data: result
+                                data: result.basic
+                            });
+                            if (result.advanced) {
+                                emitWhenConnected("integrations/postgresql.advanced", {
+                                    data: result.advanced
+                                });
+                            }
+                            return;
+                        }
+
+                        // Fall back to the original collector, which requires an
+                        // explicit database list the advanced one does not.
+                        console.error("PostgreSQL advanced collector failed, falling back:", err && err.message);
+                        if (databases.length > 0 && databases[0]) {
+                            postgresIntegration.getData(host, port, username, password, databases, (legacy) => {
+                                if (legacy) {
+                                    emitWhenConnected("integrations/postgresqlservice", {
+                                        data: legacy
+                                    });
+                                }
                             });
                         }
                     });

@@ -79,7 +79,32 @@
         "database": [],
         "autoDetected": true,
         "state": "detected_needs_config",
-        "recommended": true
+        "recommended": true,
+        "advanced": {
+            "enabled": true,
+            "queries": true,
+            "activity": true,
+            "locks": true,
+            "storage": true,
+            "indexes": true,
+            "vacuum": true,
+            "wal": true,
+            "replication": true,
+            "maxStatements": 200,
+            "maxTables": 300,
+            "maxIndexes": 500,
+            "maxActivity": 100,
+            "maxBlocking": 50,
+            "storageIntervalSeconds": 300
+        },
+        "slowQuery": {
+            "thresholdMs": 100
+        },
+        "activity": {
+            "longQuerySeconds": 30,
+            "longTransactionSeconds": 60,
+            "idleTransactionSeconds": 300
+        }
     },
     {
         "service": "mysql",
