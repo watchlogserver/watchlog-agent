@@ -1,3 +1,10 @@
+# [1.7.0](https://github.com/watchlogserver/watchlog-agent/compare/1.6.0...1.7.0) (2026-08-11)
+
+
+### Features
+
+* update postgresql ([c70e653](https://github.com/watchlogserver/watchlog-agent/commit/c70e653acd4724ca7326f5a122bb6f40d8f33cb7))
+
 # [1.6.0](https://github.com/watchlogserver/watchlog-agent/compare/1.5.0...1.6.0) (2026-08-11)
 
 
