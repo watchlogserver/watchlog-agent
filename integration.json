@@ -40,10 +40,26 @@
         "monitor": false,
         "host": "127.0.0.1",
         "port": "6379",
+        "username": "",
         "password": "",
+        "tls": false,
         "autoDetected": true,
         "state": "enabled",
-        "recommended": true
+        "recommended": true,
+        "advanced": {
+            "enabled": true,
+            "commands": true,
+            "keyspace": true,
+            "replication": true,
+            "cluster": true,
+            "maxCommands": 200,
+            "commandsIntervalSeconds": 60
+        },
+        "slowlog": {
+            "enabled": true,
+            "limit": 128,
+            "maxPerScrape": 100
+        }
     },
     {
         "monitor": false,

@@ -11,6 +11,7 @@ const dockerIntegration = require('./integrations/docker')
 const mongoIntegration = require('./integrations/mongo')
 const mongodbCollector = require('./integrations/mongodb/index')
 const redisIntegration = require('./integrations/redis')
+const redisCollector = require('./integrations/redis/index')
 const nginxIntegration = require('./integrations/nginx')
 const gitlabIntegration = require('./integrations/gitlab/index')
 const postgresIntegration = require('./integrations/postgresql');
@@ -804,12 +805,33 @@ module.exports = class Application {
                     let password = integrate.password || ""
                     let redisPort = integrate.port || 6379
                     let redisHost = integrate.host || "127.0.0.1"
-                    redisIntegration.getData(redisHost, redisPort, password, (result, err) => {
-                        if (result) {
+
+                    // One redis-cli session produces both payloads. The legacy
+                    // event is emitted byte-for-byte as before so existing
+                    // dashboards keep working; the advanced event is additive.
+                    redisCollector.collect(integrate, (err, result) => {
+                        if (!err && result) {
                             emitWhenConnected("integrations/redisservice", {
-                                data: result
+                                data: result.basic
                             })
+                            if (result.advanced) {
+                                emitWhenConnected("integrations/redis.advanced", {
+                                    data: result.advanced
+                                })
+                            }
+                            return
                         }
+
+                        // Fall back to the original collector so an agent whose
+                        // redis-cli predates --json still reports health.
+                        console.error("Redis advanced collector failed, falling back:", err && err.message);
+                        redisIntegration.getData(redisHost, redisPort, password, (legacy) => {
+                            if (legacy) {
+                                emitWhenConnected("integrations/redisservice", {
+                                    data: legacy
+                                })
+                            }
+                        })
                     })
                 }
             }

@@ -1,6 +1,6 @@
 // offlineQueue.js — bounded persistent queue for unsent agent data
 // Buffers: serverMetricsArray, integrations/*service, integrations/mongodb.advanced,
-//          dockerInfo, customMetrics
+//          integrations/redis.advanced, dockerInfo, customMetrics
 // Does NOT buffer: logs, APM spans, discovery/process snapshots, nginx/gitlab/iis
 
 const fs = require('fs');
@@ -34,6 +34,9 @@ const PRIORITY = {
     // single item is orders of magnitude larger than a health sample. Priority 3
     // means a long outage evicts these before it touches core host metrics.
     'integrations/mongodb.advanced': 3,
+    // Same reasoning: per-command stats and slowlog entries make this payload
+    // much larger than the redis health sample it accompanies.
+    'integrations/redis.advanced': 3,
 };
 
 const BUFFERABLE = new Set(Object.keys(PRIORITY));
