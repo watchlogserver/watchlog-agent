@@ -88,7 +88,24 @@
         "port": "3306",
         "username": "root",
         "password": "",
-        "database": []
+        "database": [],
+        "advanced": {
+            "enabled": true,
+            "queries": true,
+            "schema": true,
+            "indexes": true,
+            "locks": true,
+            "replication": true,
+            "maxDigests": 200,
+            "maxTables": 300,
+            "maxIndexes": 500,
+            "maxLockWaits": 50,
+            "schemaIntervalSeconds": 300,
+            "indexIntervalSeconds": 300
+        },
+        "slowQuery": {
+            "thresholdMs": 100
+        }
     },
     {
         "service": "gitlab",

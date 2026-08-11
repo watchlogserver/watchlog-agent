@@ -16,6 +16,7 @@ const nginxIntegration = require('./integrations/nginx')
 const gitlabIntegration = require('./integrations/gitlab/index')
 const postgresIntegration = require('./integrations/postgresql');
 const mysqlIntegration = require('./integrations/mysql');
+const mysqlCollector = require('./integrations/mysql/index');
 const { collectAndEmitMetrics } = require('./collectAndEmitMetrics');
 const { runDiscovery, collectProcessSnapshot } = require('./discovery/index');
 const zlib = require('zlib');
@@ -778,17 +779,39 @@ module.exports = class Application {
 
         try {
             for (let integrate of integrations) {
-                if (integrate.service === 'mysql' && integrate.monitor === true && integrate.database && integrate.database.length > 0) {
+                if (integrate.service === 'mysql' && integrate.monitor === true) {
                     let username = integrate.username || "";
                     let password = integrate.password || "";
                     let port = integrate.port || "3306";
                     let host = integrate.host || "localhost";
                     let databases = Array.isArray(integrate.database) ? integrate.database : [integrate.database];
 
-                    mysqlIntegration.getData(host, port, username, password, databases, (result) => {
-                        if (result) {
+                    // One connection produces both payloads. The legacy event is
+                    // emitted byte-for-byte as before so existing dashboards keep
+                    // working; the advanced event is additive.
+                    mysqlCollector.collect(integrate, (err, result) => {
+                        if (!err && result) {
                             emitWhenConnected("integrations/mysqlservice", {
-                                data: result
+                                data: result.basic
+                            });
+                            if (result.advanced) {
+                                emitWhenConnected("integrations/mysql.advanced", {
+                                    data: result.advanced
+                                });
+                            }
+                            return;
+                        }
+
+                        // Fall back to the original collector. It needs an explicit
+                        // database list, which the advanced collector does not.
+                        console.error("MySQL advanced collector failed, falling back:", err && err.message);
+                        if (databases.length > 0 && databases[0]) {
+                            mysqlIntegration.getData(host, port, username, password, databases, (legacy) => {
+                                if (legacy) {
+                                    emitWhenConnected("integrations/mysqlservice", {
+                                        data: legacy
+                                    });
+                                }
                             });
                         }
                     });
