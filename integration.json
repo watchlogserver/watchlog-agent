@@ -30,7 +30,7 @@
             "indexIntervalSeconds": 300
         },
         "slowQuery": {
-            "enabled": true,
+            "enabled": false,
             "threshold": 100,
             "maxPerCollection": 10
         }

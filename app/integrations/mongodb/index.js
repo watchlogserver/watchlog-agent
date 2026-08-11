@@ -155,7 +155,15 @@ function normalizeConfig(integrate) {
         maxDatabases: Number(advanced.maxDatabases || DEFAULTS.maxDatabases),
         maxCollectionsPerDb: Number(advanced.maxCollectionsPerDatabase || DEFAULTS.maxCollectionsPerDb),
         maxCollections: Number(advanced.maxCollections || DEFAULTS.maxCollections),
-        maxSlowQueries: Number(advanced.maxSlowQueries || DEFAULTS.maxSlowQueries),
+        // The cap applies per scrape across all databases, not per collection.
+        // `maxPerCollection` was the original (misleading) name and is still
+        // honoured so existing config files keep working.
+        maxSlowQueries: Number(
+            slowQuery.maxPerScrape
+            || slowQuery.maxPerCollection
+            || advanced.maxSlowQueries
+            || DEFAULTS.maxSlowQueries
+        ),
         storageIntervalSeconds: Number(advanced.storageIntervalSeconds || DEFAULTS.storageIntervalSeconds),
         indexIntervalSeconds: Number(advanced.indexIntervalSeconds || DEFAULTS.indexIntervalSeconds)
     };
