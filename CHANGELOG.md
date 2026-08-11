@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/watchlogserver/watchlog-agent/compare/1.2.0...1.3.0) (2026-08-11)
+
+
+### Features
+
+* Mongodb Integration ([b50cc61](https://github.com/watchlogserver/watchlog-agent/commit/b50cc6169585c5fd2b9c3b4b3e413d00da8554a5))
+
 # [1.2.0](https://github.com/watchlogserver/watchlog-agent/compare/1.1.1...1.2.0) (2026-06-09)
 
 
