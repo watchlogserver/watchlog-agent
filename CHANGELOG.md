@@ -1,3 +1,10 @@
+# [1.6.0](https://github.com/watchlogserver/watchlog-agent/compare/1.5.0...1.6.0) (2026-08-11)
+
+
+### Features
+
+* update mysql integration ([05d47a1](https://github.com/watchlogserver/watchlog-agent/commit/05d47a10b3e7b3ca3e2284d066956547d4abfb9d))
+
 # [1.5.0](https://github.com/watchlogserver/watchlog-agent/compare/1.4.0...1.5.0) (2026-08-11)
 
 
