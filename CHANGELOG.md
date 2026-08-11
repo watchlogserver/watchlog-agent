@@ -1,3 +1,10 @@
+# [1.5.0](https://github.com/watchlogserver/watchlog-agent/compare/1.4.0...1.5.0) (2026-08-11)
+
+
+### Features
+
+* update redis integration ([470cb67](https://github.com/watchlogserver/watchlog-agent/commit/470cb67c9f7c5190ed7bab28bb19fd4ae69f4a1d))
+
 # [1.4.0](https://github.com/watchlogserver/watchlog-agent/compare/1.3.0...1.4.0) (2026-08-11)
 
 
