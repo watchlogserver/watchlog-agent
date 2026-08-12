@@ -77,6 +77,28 @@ const SERVICE_DEFINITIONS = [
         })
     },
     {
+        service: 'elasticsearch',
+        // The process is a JVM, so the JVM's own name is useless as evidence.
+        // The package's launcher script and the default HTTP port are what
+        // actually identify it.
+        processNames: ['elasticsearch'],
+        ports: [9200],
+        logFiles: ['/var/log/elasticsearch', '/usr/share/elasticsearch/logs'],
+        canAutoEnable: false,
+        // Elasticsearch 8 ships with security on by default, so a detected
+        // cluster still needs credentials before it can be monitored.
+        needsCredentials: true,
+        buildConfig: (ports) => ({
+            protocol: 'http',
+            host: '127.0.0.1',
+            port: ports.find(p => p.port === 9200)?.port || 9200,
+            username: '',
+            password: '',
+            apiKey: '',
+            verifyCertificate: true
+        })
+    },
+    {
         service: 'pm2',
         processNames: ['pm2', 'pm2-runtime'],
         ports: [],

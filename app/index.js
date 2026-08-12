@@ -1,5 +1,5 @@
 const port = 3774
-const { emitWhenConnected, sendHeartbeat } = require('./socketServer');
+const { emitWhenConnected, sendHeartbeat, registerCommandHandler } = require('./socketServer');
 
 const express = require('express')
 const app = express()
@@ -18,12 +18,44 @@ const postgresIntegration = require('./integrations/postgresql');
 const postgresCollector = require('./integrations/postgresql/index');
 const mysqlIntegration = require('./integrations/mysql');
 const mysqlCollector = require('./integrations/mysql/index');
+const elasticsearchCollector = require('./integrations/elasticsearch/index');
 const { collectAndEmitMetrics } = require('./collectAndEmitMetrics');
 const { runDiscovery, collectProcessSnapshot } = require('./discovery/index');
 const zlib = require('zlib');
 
 const logagent = require('./log-agent')
 let customMetrics = []
+
+// ── on-demand Elasticsearch diagnostics ───────────────────────────────────────
+//
+// Hot Threads is far too expensive to collect on the 60s tick — it samples every
+// thread on every node for the sampling interval — so it runs only when the
+// dashboard asks for it. Both handlers are strictly read-only: the Elasticsearch
+// client refuses any method other than GET and the single diagnostic POST.
+
+function findElasticsearchIntegration(clusterId) {
+    const candidates = integrations.filter((i) => i.service === 'elasticsearch');
+    if (!clusterId) return candidates[0] || null;
+    // A host may monitor more than one cluster; match on the id the payload
+    // carries so the right endpoint is used.
+    return candidates.find((i) => `${i.host}:${i.port}` === clusterId || i.url === clusterId)
+        || candidates[0] || null;
+}
+
+registerCommandHandler('elasticsearch.hotThreads', async (params) => {
+    const integrate = findElasticsearchIntegration(params.clusterId);
+    if (!integrate) throw new Error('no Elasticsearch integration is configured on this host');
+    return elasticsearchCollector.captureHotThreads(integrate, params);
+});
+
+registerCommandHandler('elasticsearch.testConnection', async (params) => {
+    // Tests the configuration already stored on this host, never one supplied by
+    // the caller: a command must not be able to make the agent connect to an
+    // arbitrary endpoint with arbitrary credentials.
+    const integrate = findElasticsearchIntegration(params.clusterId);
+    if (!integrate) throw new Error('no Elasticsearch integration is configured on this host');
+    return elasticsearchCollector.testConnection(integrate);
+});
 
 module.exports = class Application {
     constructor() {
@@ -639,6 +671,36 @@ module.exports = class Application {
                 console.log(error.message)
             }
         })
+        // Validates an Elasticsearch configuration before it is written into
+        // integration.json. Bound to the agent's local API on the customer's own
+        // host, which is where the credentials already live — nothing is sent
+        // anywhere, and the response never echoes a password or API key.
+        app.post("/integrations/elasticsearch/test", async (req, res) => {
+            try {
+                const body = req.body || {};
+                const candidate = Object.keys(body).length
+                    ? body
+                    : findElasticsearchIntegration(null);
+
+                if (!candidate) {
+                    return res.status(400).json({
+                        ok: false,
+                        kind: 'config',
+                        message: 'No Elasticsearch configuration was supplied and none is stored on this host.'
+                    });
+                }
+
+                const result = await elasticsearchCollector.testConnection(candidate);
+                return res.status(result.ok ? 200 : 400).json(result);
+            } catch (error) {
+                return res.status(500).json({
+                    ok: false,
+                    kind: 'internal',
+                    message: 'Connection test failed unexpectedly.'
+                });
+            }
+        });
+
         app.post("/pm2list", (req, res) => {
             res.end()
 
@@ -883,6 +945,39 @@ module.exports = class Application {
             }
         } catch (error) {
             console.error("Redis Integration Error:", error.message);
+        }
+
+        try {
+            for (let integrate of integrations) {
+                if (integrate.service === 'elasticsearch' && integrate.monitor === true) {
+                    // Elasticsearch has no legacy collector to fall back to — it
+                    // was built advanced-only — so there is a single emit. The
+                    // server handler owns creating the Integration document,
+                    // which for the other engines the legacy event does.
+                    elasticsearchCollector.collect(integrate, (err, result) => {
+                        if (err || !result || !result.advanced) {
+                            console.error("Elasticsearch collector failed:", err && err.message);
+                            return;
+                        }
+
+                        emitWhenConnected("integrations/elasticsearch.advanced", {
+                            data: result.advanced
+                        });
+
+                        // A cluster with more indices than one payload can carry
+                        // sends the remainder as index-only follow-ups. Each is
+                        // written independently, so a dropped batch costs those
+                        // indices for one tick and nothing else.
+                        for (const batch of result.batches || []) {
+                            emitWhenConnected("integrations/elasticsearch.advanced", {
+                                data: batch
+                            });
+                        }
+                    });
+                }
+            }
+        } catch (error) {
+            console.error("Elasticsearch Integration Error:", error.message);
         }
 
         try {

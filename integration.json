@@ -74,9 +74,11 @@
         "monitor": false,
         "host": "localhost",
         "port": "5432",
-        "username": "",
+        "username": "postgres",
         "password": "",
-        "database": [],
+        "database": [
+            "postgres"
+        ],
         "autoDetected": true,
         "state": "detected_needs_config",
         "recommended": true,
@@ -153,5 +155,60 @@
         "autoDetected": true,
         "recommended": true,
         "state": "enabled"
+    },
+    {
+        "service": "elasticsearch",
+        "monitor": false,
+        "protocol": "http",
+        "host": "localhost",
+        "port": "9200",
+        "url": "",
+        "username": "elastic",
+        "password": "fZDohj6KObvsU3JkFaEb",
+        "apiKey": "",
+        "verifyCertificate": true,
+        "tls": {
+            "enabled": false,
+            "verifyCertificate": true,
+            "ca": ""
+        },
+        "requestTimeoutMs": 15000,
+        "autoDetected": false,
+        "state": "detected_needs_config",
+        "recommended": true,
+        "advanced": {
+            "enabled": true,
+            "indices": true,
+            "shards": true,
+            "clusterStats": true,
+            "pendingTasks": true,
+            "recovery": true,
+            "tasks": true,
+            "dataStreams": true,
+            "allocationExplain": true,
+            "maxIndices": 200,
+            "maxIndicesPerPayload": 200,
+            "maxShards": 2000,
+            "maxNodes": 200,
+            "indexIntervalSeconds": 300,
+            "shardIntervalSeconds": 300,
+            "clusterStatsIntervalSeconds": 300,
+            "metadataIntervalSeconds": 900,
+            "recoveryIntervalSeconds": 300,
+            "taskIntervalSeconds": 600,
+            "slowSearchThresholdMs": 500,
+            "slowIndexingThresholdMs": 500
+        },
+        "slowlog": {
+            "enabled": true,
+            "searchLogPath": "",
+            "indexingLogPath": "",
+            "logDirectories": [],
+            "minDurationMs": 0,
+            "maxEntriesPerCollection": 200,
+            "maxQueryLength": 2000,
+            "maxSourceLength": 512,
+            "storeSource": false
+        }
     }
 ]

@@ -1,7 +1,8 @@
 // offlineQueue.js — bounded persistent queue for unsent agent data
 // Buffers: serverMetricsArray, integrations/*service, integrations/mongodb.advanced,
 //          integrations/redis.advanced, integrations/mysql.advanced,
-//          integrations/postgresql.advanced, dockerInfo, customMetrics
+//          integrations/postgresql.advanced, integrations/elasticsearch.advanced,
+//          dockerInfo, customMetrics
 // Does NOT buffer: logs, APM spans, discovery/process snapshots, nginx/gitlab/iis
 
 const fs = require('fs');
@@ -44,6 +45,11 @@ const PRIORITY = {
     // Same shape: per-statement, per-table and per-index arrays, plus current
     // activity and lock snapshots.
     'integrations/postgresql.advanced': 3,
+    // The largest of them all on a real cluster: per-node, per-index, per-shard,
+    // per-thread-pool and per-breaker arrays in one payload, plus the index
+    // batches that follow it when a cluster has more indices than one payload
+    // can carry.
+    'integrations/elasticsearch.advanced': 3,
 };
 
 const BUFFERABLE = new Set(Object.keys(PRIORITY));

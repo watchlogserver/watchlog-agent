@@ -140,6 +140,54 @@ watchlogServerSocket.on('account_active', () => {
     console.log('[Watchlog] Account reactivated. Data ingestion resumed.');
 });
 
+// ── on-demand commands from the Watchlog server ───────────────────────────────
+//
+// Some diagnostics are far too expensive to run on a timer — Elasticsearch hot
+// threads samples every thread on every node — so the dashboard asks for them
+// when the operator presses the button. The server routes the request to this
+// agent's socket, the registered handler runs it, and the answer comes back on
+// the normal event channel.
+//
+// A command may only *read*. Handlers are registered by integration code, and
+// nothing in this file can be talked into running a shell or writing a file:
+// an unknown command name is answered with an error, never executed.
+
+const commandHandlers = new Map();
+
+function registerCommandHandler(name, handler) {
+    commandHandlers.set(String(name), handler);
+}
+
+watchlogServerSocket.on('agent:command', async (message) => {
+    const request = message || {};
+    const requestId = String(request.requestId || '');
+    const command = String(request.command || '');
+
+    const respond = (payload) => {
+        if (isSuspended || !watchlogServerSocket.connected) return;
+        watchlogServerSocket.emit('agent:command.result', Object.assign({
+            requestId,
+            command,
+            completedAt: new Date().toISOString()
+        }, payload));
+    };
+
+    const handler = commandHandlers.get(command);
+    if (!handler) {
+        respond({ ok: false, error: `unsupported command: ${command.slice(0, 64)}` });
+        return;
+    }
+
+    try {
+        const result = await handler(request.params || {});
+        respond({ ok: true, result });
+    } catch (err) {
+        // Handler errors are already credential-free by construction; truncated
+        // anyway so a stack trace never travels as a "result".
+        respond({ ok: false, error: String(err && err.message || err).slice(0, 300) });
+    }
+});
+
 // ۴) helper برای emit ایمن (با بررسی وضعیت تعلیق)
 function emitWhenConnected(event, payload) {
     if (isSuspended) return;
@@ -227,4 +275,5 @@ module.exports = {
     socket: watchlogServerSocket,
     emitWhenConnected,
     sendHeartbeat,
+    registerCommandHandler,
 };

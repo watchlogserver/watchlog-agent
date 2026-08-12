@@ -2,6 +2,7 @@ const fs = require('fs');
 const chokidar = require('chokidar');
 const {emitWhenConnected} = require("./socketServer");
 const { normalizeLogLines } = require('./normalizer/normalizeLogLines');
+const { createTailReader } = require('./logTail');
 
 let monitorLogs = [];
 const CONFIG_FILE = 'log-watchlist.json';
@@ -18,9 +19,14 @@ const RECENT_LOG_TTL_MS = 5000;
 // Watcher registry: path → chokidar.FSWatcher
 const watcherRegistry = new Map();
 
-// File offset tracking: path → { inode, offset }
-// Persists across config reloads so rotation detection keeps working
-const fileOffsets = new Map();
+// Shared incremental reader (app/logTail.js): inode + offset tracking, rotation
+// detection and bounded reads. Its state persists across config reloads so a
+// reload never replays or skips content, and it is the same primitive the
+// Elasticsearch slow-log collector follows files with.
+const tailReader = createTailReader({
+    maxReadBytes: MAX_READ_PER_CHANGE,
+    maxLineLength: MAX_LINE_LENGTH
+});
 
 // Bounded recent-log deduplication
 let recentLogKeys = new Set();
@@ -227,87 +233,44 @@ function startMonitoring() {
         console.log(`👀 Monitoring: ${logEntry.name} (${logEntry.path})`);
         monitorLogs.push(logEntry);
 
-        // Initialize file offset to current file size on startup/reload
-        // so we don't replay existing content
-        if (!fileOffsets.has(logEntry.path)) {
-            try {
-                const initStats = fs.statSync(logEntry.path);
-                fileOffsets.set(logEntry.path, { inode: initStats.ino, offset: initStats.size });
-            } catch (err) {
-                fileOffsets.set(logEntry.path, { inode: 0, offset: 0 });
-            }
+        // Position at the current end of the file on first sighting so a
+        // startup or config reload never replays existing content.
+        if (!tailReader.isTracked(logEntry.path)) {
+            tailReader.seek(logEntry.path, 'end');
         }
 
         const watcher = chokidar.watch(logEntry.path, { persistent: true, ignoreInitial: true });
 
         watcher.on('change', filePath => {
             try {
-                const stats = fs.statSync(filePath);
-                if (stats.size === 0) return; // Skip empty files
-
-                let state = fileOffsets.get(filePath);
-                if (!state) {
-                    state = { inode: stats.ino, offset: stats.size };
-                    fileOffsets.set(filePath, state);
+                // One bounded window per change event, exactly as before. The
+                // reader keeps any trailing partial line unread instead of
+                // stepping over it, so a write caught mid-line is no longer lost.
+                const { lines, error } = tailReader.read(filePath);
+                if (error) {
+                    console.error(`Error reading file ${filePath}: ${error}`);
                     return;
                 }
+                if (!lines.length) return;
 
-                // Detect file rotation: inode changed or file shrank
-                if (state.inode !== stats.ino || stats.size < state.offset) {
-                    state.inode = stats.ino;
-                    state.offset = 0;
-                }
-
-                if (state.offset >= stats.size) return; // No new content
-
-                const readStart = state.offset;
-                const readEnd = Math.min(stats.size - 1, readStart + MAX_READ_PER_CHANGE - 1);
-
-                const stream = fs.createReadStream(filePath, {
-                    encoding: 'utf8',
-                    start: readStart,
-                    end: readEnd
-                });
-
-                let buffer = "";
-                stream.on('data', chunk => {
-                    buffer += chunk;
-                });
-
-                stream.on('end', () => {
-                    // Update offset to one past the last byte we read
-                    state.offset = readEnd + 1;
-                    fileOffsets.set(filePath, state);
-
-                    const lines = buffer.split('\n');
-
-                    // If the buffer does not end with '\n', the last element is an
-                    // incomplete line — skip it; it will be included in the next read
-                    const completeLines = buffer.endsWith('\n') ? lines : lines.slice(0, -1);
-
-                    if (logEntry.format === 'custom' && logEntry.pattern) {
-                        // Custom regex format: use old per-line path to honour named groups
-                        completeLines.forEach(line => {
-                            if (line.trim()) processLogLine(line, logEntry);
-                        });
-                    } else {
-                        // All other formats: normalizer groups multiline errors and
-                        // detects level/type before emitting
-                        const normState = fileNormalizerState.get(filePath) || { pendingEvent: null };
-                        const { events, pendingEvent } = normalizeLogLines({
-                            lines: completeLines,
-                            filePath,
-                            logEntry,
-                            pendingEvent: normState.pendingEvent,
-                        });
-                        fileNormalizerState.set(filePath, { pendingEvent });
-                        for (const event of events) {
-                            emitNormalizedEvent(event);
-                        }
+                if (logEntry.format === 'custom' && logEntry.pattern) {
+                    // Custom regex format: use old per-line path to honour named groups
+                    lines.forEach(line => processLogLine(line, logEntry));
+                } else {
+                    // All other formats: normalizer groups multiline errors and
+                    // detects level/type before emitting
+                    const normState = fileNormalizerState.get(filePath) || { pendingEvent: null };
+                    const { events, pendingEvent } = normalizeLogLines({
+                        lines,
+                        filePath,
+                        logEntry,
+                        pendingEvent: normState.pendingEvent,
+                    });
+                    fileNormalizerState.set(filePath, { pendingEvent });
+                    for (const event of events) {
+                        emitNormalizedEvent(event);
                     }
-                });
-
-                stream.on('error', err => console.error(`Error reading file ${filePath}:`, err));
+                }
             } catch (error) {
                 console.error(`❌ Error processing file ${filePath}:`, error);
             }
