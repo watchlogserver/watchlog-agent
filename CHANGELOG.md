@@ -1,3 +1,10 @@
+## [1.8.1](https://github.com/watchlogserver/watchlog-agent/compare/1.8.0...1.8.1) (2026-08-12)
+
+
+### Bug Fixes
+
+* elastic ([c1e803e](https://github.com/watchlogserver/watchlog-agent/commit/c1e803e195d099ed3e5edfa3fb9ed5146eb0b7bf))
+
 # [1.8.0](https://github.com/watchlogserver/watchlog-agent/compare/1.7.0...1.8.0) (2026-08-12)
 
 
