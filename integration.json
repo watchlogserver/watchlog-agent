@@ -163,8 +163,8 @@
         "host": "localhost",
         "port": "9200",
         "url": "",
-        "username": "elastic",
-        "password": "fZDohj6KObvsU3JkFaEb",
+        "password": "",
+        "username": "",
         "apiKey": "",
         "verifyCertificate": true,
         "tls": {
